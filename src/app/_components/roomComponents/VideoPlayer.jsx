@@ -37,7 +37,10 @@ export default function VideoPlayer() {
     <Container>
       <div className="lg:flex">
         <div className="w-12/12 lg:w-8/12">
-          <h1 className="p-2 text-slate-400 font-bold bg-slate-800">Hello Theatre</h1>
+          <div className="p-2 text-slate-400 font-bold bg-slate-800">
+            <h1>Hello Theatre</h1>
+            <p className="text-[5px] text-blue-500">Producted by NanAi</p>
+          </div>
           <div className="border-2 border-x-sky-950">
             <iframe
               id="youtubePlayer"
@@ -77,11 +80,11 @@ export default function VideoPlayer() {
           <div className="p-4 px-2">
             <div className="flex">
               <div className="flex p-2 text-white justify-center">
-                <RxAvatar className="text-5xl" />
+                <RxAvatar className="lg:text-5xl text-4xl" />
               </div>
               <div className="p-2">
-                <div className="shadow-2xl bg-slate-700 text-white flex items-center justify-center border p-2 rounded-xl">
-                  Hello, the movie sign is awesome
+                <div className="shadow-2xl lg:text-sm text-[10px] bg-black text-white flex items-center justify-center border-blue-500 p-2 px-3 border rounded-xl">
+                  Hey there, this project is still under construction
                 </div>
               </div>
             </div>
