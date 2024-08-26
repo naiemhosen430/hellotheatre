@@ -47,7 +47,7 @@ export default function VideoPlayer() {
               src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=1&controls=1`}
               title="YouTube video player"
               frameBorder="0"
-              allow="autoplay; encrypted-media"
+              allow="autoplay"
               allowFullScreen
             ></iframe>
 
