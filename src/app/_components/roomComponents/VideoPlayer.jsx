@@ -37,7 +37,7 @@ export default function VideoPlayer() {
     <Container>
       <div className="lg:flex">
         <div className="w-12/12 lg:w-8/12">
-          <h1 className="p-2 text-slate-400 bg-slate-800">Movie Theatre</h1>
+          <h1 className="p-2 text-slate-400 font-bold bg-slate-800">Hello Theatre</h1>
           <div className="border-2 border-x-sky-950">
             <iframe
               id="youtubePlayer"
