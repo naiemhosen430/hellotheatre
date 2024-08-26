@@ -44,7 +44,7 @@ export default function VideoPlayer() {
               className="lg:max-h-[400px] max-h-[250px]"
               width="100%"
               height="500"
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=1&controls=1`}
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&rel=0&controls=1&modestbranding=0&iv_load_policy=3&fs=1&playsinline=1`}
               title="YouTube video player"
               frameBorder="0"
               allow="autoplay"
@@ -54,7 +54,7 @@ export default function VideoPlayer() {
             {errorData && (
               <p className="text-white text-[10px] px-2">{errorData}</p>
             )}
-            <div className="suggestions px-2 flex items-center">
+            <div className="suggestions overflow-hidden overflow-y-auto px-2 flex items-center">
               <input
                 type="text"
                 placeholder="Enter YouTube URL"
