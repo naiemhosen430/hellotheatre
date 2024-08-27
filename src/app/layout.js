@@ -1,6 +1,8 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Head from "next/head";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Container } from "react-bootstrap";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +21,9 @@ export default function RootLayout({ children }) {
         />
       </Head>
       <body className={inter.className}>
-        <div className="bg-[#1E201E] min-h-screen">{children}</div>
+        <Container>
+          <div className="bg-[#1E201E] min-h-screen">{children}</div>
+        </Container>
       </body>
     </html>
   );
