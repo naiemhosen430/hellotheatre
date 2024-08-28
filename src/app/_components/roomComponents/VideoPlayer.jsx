@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { Container } from "react-bootstrap";
+import { FaPlus } from "react-icons/fa";
 import { RxAvatar } from "react-icons/rx";
 
 export default function VideoPlayer() {
@@ -8,6 +9,7 @@ export default function VideoPlayer() {
   const [videoUrl, setVideoUrl] = useState(null); // For local video playback
   const [errorData, setErrorData] = useState("");
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null); // Ref for the hidden file input
 
   // Handles YouTube URL input
   const handleVideoChange = (url) => {
@@ -39,7 +41,12 @@ export default function VideoPlayer() {
     }
   };
 
-  // Clears the file input and video URL
+  // Trigger the file input click
+  const handlePlayFromDevice = () => {
+    fileInputRef.current.click(); // Programmatically click the file input
+  };
+
+  // Clear the file input and video URL
   const handleDefaultVideo = () => {
     inputRef.current.value = ""; // Clear the input field
     setVideoUrl(null); // Clear local video URL
@@ -94,13 +101,20 @@ export default function VideoPlayer() {
               className="bg-slate-700 w-4/12 text-white px-2 py-2 m-1 rounded-xl lg:text-sm text-[10px]"
               onClick={handleDefaultVideo}
             >
-              Play from device
+              Clear Video
+            </button>
+            <button
+              className="bg-slate-700 w-4/12 text-white px-2 py-2 m-1 rounded-xl lg:text-2xl text-xl"
+              onClick={handlePlayFromDevice}
+            >
+              <FaPlus />
             </button>
             <input
               type="file"
               accept="video/*"
+              ref={fileInputRef} // Reference to the hidden file input
               onChange={handleFileChange}
-              className="ml-2 w-4/12"
+              className="hidden" // Hide the file input
             />
           </div>
         </div>
