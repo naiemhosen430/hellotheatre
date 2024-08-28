@@ -94,7 +94,7 @@ export default function VideoPlayer() {
               type="text"
               placeholder="Enter YouTube URL"
               ref={inputRef}
-              className="w-8/12 p-2 m-1 lg:text-sm text-[10px] rounded-md bg-slate-700 text-white"
+              className="w-6/12 p-2 m-1 lg:text-sm text-[10px] rounded-md bg-slate-700 text-white"
               onChange={(e) => handleVideoChange(e.target.value)}
             />
             <button
@@ -104,7 +104,7 @@ export default function VideoPlayer() {
               Clear Video
             </button>
             <button
-              className="bg-slate-700 w-4/12 text-white px-2 py-2 m-1 rounded-xl lg:text-2xl text-xl"
+              className="bg-slate-700 w-2/12 text-white px-2 py-2 m-1 text-center rounded-xl lg:text-2xl text-xl"
               onClick={handlePlayFromDevice}
             >
               <FaPlus />
