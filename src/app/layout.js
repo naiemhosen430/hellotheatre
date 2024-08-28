@@ -21,9 +21,7 @@ export default function RootLayout({ children }) {
         />
       </Head>
       <body className={inter.className}>
-        <Container>
-          <div className="bg-[#1E201E] min-h-screen">{children}</div>
-        </Container>
+        <div className="bg-[#1E201E] min-h-screen">{children}</div>
       </body>
     </html>
   );
