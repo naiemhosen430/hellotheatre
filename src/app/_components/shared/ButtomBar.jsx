@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React from "react";
 import { Container } from "react-bootstrap";
 import { FaMicrophone } from "react-icons/fa";
@@ -13,7 +13,7 @@ export default function ButtomBar({ roomName }) {
   const userData = state?.user;
   return (
     <>
-      {roomName && (
+      {userData && (
         <div className="fixed bottom-0 w-full">
           <Container className="bg-black p-2 flex items-center justify-around">
             <span className="p-2 w-6/12 text-white lg:text-2xl font-bold text-lg">

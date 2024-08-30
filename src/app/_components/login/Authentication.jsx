@@ -79,7 +79,7 @@ export default function Authentication() {
       {/* Modal for Login */}
       {isLoginVisible && (
         <div className="fixed top-0 left-0 h-screen w-screen bg-black/50 flex items-center justify-center">
-          <div className="lg:w-5/12 w-11/12 bg-gray-800 p-5 rounded-xl shadow-xl">
+          <div className="lg:w-5/12 w-11/12 bg-gray-800 lg:p-5 p-2 rounded-xl shadow-xl">
             <h1 className="text-xl text-slate-400 font-bold py-2 lg:text-3xl">
               Login
             </h1>
@@ -125,7 +125,7 @@ export default function Authentication() {
       {/* Modal for Create Room */}
       {isCreateRoomVisible && (
         <div className="fixed top-0 left-0 h-screen w-screen bg-black/50 flex items-center justify-center">
-          <div className="lg:w-5/12 w-11/12 bg-gray-800 p-5 rounded-xl shadow-xl">
+          <div className="lg:w-5/12 w-11/12 bg-gray-800 lg:p-5 p-2 rounded-xl shadow-xl">
             <h1 className="text-xl text-slate-400 font-bold py-2 lg:text-3xl">
               Create New Room
             </h1>
