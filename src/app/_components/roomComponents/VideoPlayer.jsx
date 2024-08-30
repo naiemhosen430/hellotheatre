@@ -57,8 +57,10 @@ export default function VideoPlayer() {
     <div className="lg:flex">
       <div className="w-12/12 lg:w-8/12">
         <div className="p-2 text-slate-400 font-bold bg-slate-800">
-          <h1 className="text-xl lg:text-sm">Hello Theatre</h1>
-          <p className="text-[5px] text-blue-500">Produced by NanAi</p>
+          <h1 className="text-xl leading-[10px] lg:text-sm">Hello Theatre</h1>
+          <p className="text-[5px] leading-[10px] text-blue-500">
+            Produced by NanAi
+          </p>
         </div>
         <div className="border-2 border-x-sky-950">
           {/* Conditionally render iframe or video element based on source */}
