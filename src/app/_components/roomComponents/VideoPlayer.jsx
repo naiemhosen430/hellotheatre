@@ -57,7 +57,7 @@ export default function VideoPlayer() {
     <div className="lg:flex">
       <div className="w-12/12 lg:w-8/12">
         <div className="p-2 text-slate-400 font-bold bg-slate-800">
-          <h1>Hello Theatre</h1>
+          <h1 className="text-xl lg:text-sm">Hello Theatre</h1>
           <p className="text-[5px] text-blue-500">Produced by NanAi</p>
         </div>
         <div className="border-2 border-x-sky-950">
@@ -121,7 +121,9 @@ export default function VideoPlayer() {
       </div>
 
       <div className="w-12/12 lg:w-4/12">
-        <h1 className="p-2 text-slate-400 bg-slate-800">People (12)</h1>
+        <h1 className="p-2 text-slate-400 bg-slate-800 text-xl lg:text-sm">
+          People (12)
+        </h1>
         <div className="p-4 px-2">
           <div className="flex">
             <div className="flex p-2 text-white justify-center">

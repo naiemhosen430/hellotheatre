@@ -19,25 +19,42 @@ export default function ButtomBar({ roomName }) {
             <span className="p-2 w-6/12 text-white lg:text-2xl font-bold text-lg">
               {userData?.username}
             </span>
-            <button
-              title="You are unmute now"
-              className="p-2 text-white lg:text-2xl font-bold text-lg"
-            >
-              <FaMicrophone />
-              {/* <FaMicrophoneSlash /> */}
-            </button>
-            <button
-              title="Share this room"
-              className="p-2 text-white lg:text-2xl font-bold text-lg"
-            >
-              <FaShare />
-            </button>
-            <button
-              title="Leave this room"
-              className="p-2 text-white lg:text-2xl font-bold text-lg"
-            >
-              <RxExit />
-            </button>
+
+            {/* <div className="flex items-center justify-end">
+              <button
+                title="You are unmute now"
+                className="p-2 text-white lg:text-2xl font-bold text-lg"
+              >
+                <FaMicrophone />
+                <FaMicrophoneSlash />
+              </button>
+              <button
+                title="Share this room"
+                className="p-2 text-white lg:text-2xl font-bold text-lg"
+              >
+                <FaShare />
+              </button>
+              <button
+                title="Leave this room"
+                className="p-2 text-white lg:text-2xl font-bold text-lg"
+              >
+                <RxExit />
+              </button>
+            </div> */}
+            <div className="flex items-center justify-end">
+              <button
+                title="You are unmute now"
+                className="p-2 x-2 white bg-blue-800 rounded-xl lg:text-xl text-sm font-bold "
+              >
+                Join
+              </button>
+              <button
+                title="Share this room"
+                className="p-2 x-2 white bg-blue-800 rounded-xl lg:text-xl text-sm font-bold "
+              >
+                Your Room
+              </button>
+            </div>
           </Container>
         </div>
       )}

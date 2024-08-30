@@ -4,8 +4,10 @@ import VideoPlayer from "./_components/roomComponents/VideoPlayer";
 import ButtomBar from "./_components/shared/ButtomBar";
 import Authentication from "./_components/login/Authentication";
 import { AuthContex } from "@/Contexts/AuthContex";
+import { getCookie } from "cookies-next";
 
 export default function Home() {
+  const token = getCookie("accesstoken");
   const { state, dispatch } = useContext(AuthContex);
   const userData = state?.user;
   // State for managing room name
@@ -25,7 +27,7 @@ export default function Home() {
     setInputValue("");
   };
 
-  if (!userData) {
+  if (!token) {
     return (
       <>
         <Authentication />
