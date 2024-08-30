@@ -56,9 +56,9 @@ export default function VideoPlayer() {
   return (
     <div className="lg:flex">
       <div className="w-12/12 lg:w-8/12">
-        <div className="p-2 pb-2 text-slate-400 font-bold bg-slate-800">
+        <div className=" p-2 text-slate-400 font-bold bg-slate-800">
           <h1 className="text-xl leading-[10px] lg:text-sm">Hello Theatre</h1>
-          <p className="text-[5px] leading-[10px] text-blue-500">
+          <p className="text-[5px] m-0 leading-[10px] text-blue-500">
             Produced by NanAi
           </p>
         </div>
@@ -96,17 +96,17 @@ export default function VideoPlayer() {
               type="text"
               placeholder="Enter YouTube URL"
               ref={inputRef}
-              className="w-6/12 p-2 m-1 lg:text-sm text-[10px] rounded-md bg-slate-700 text-white"
+              className="w-8/12 p-2 m-1 lg:text-sm text-[10px] rounded-md bg-slate-700 text-white"
               onChange={(e) => handleVideoChange(e.target.value)}
             />
             <button
-              className="bg-slate-700 w-4/12 text-white px-2 py-2 m-1 rounded-xl lg:text-sm text-[10px]"
+              className="bg-slate-700 w-3/12 text-white px-2 py-2 m-1 rounded-xl lg:text-sm text-[10px]"
               onClick={handleDefaultVideo}
             >
               Clear Video
             </button>
             <button
-              className="bg-slate-700 w-2/12 text-white px-2 py-2 m-1 text-center rounded-xl lg:text-2xl text-xl"
+              className="bg-slate-700 w-1/12 text-white px-1 py-2 m-1 text-center rounded-xl lg:text-2xl text-xl"
               onClick={handlePlayFromDevice}
             >
               <FaPlus />

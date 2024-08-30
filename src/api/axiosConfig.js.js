@@ -9,6 +9,7 @@ const apiBaseURL = process.env.SERVER_URL;
 
 // Create Axios instance
 const axiosInstance = axios.create({
+  // baseURL: "http://localhost:5000",
   baseURL: "https://api-hellotheatre.onrender.com",
   headers: {
     "Content-Type": "application/json",
