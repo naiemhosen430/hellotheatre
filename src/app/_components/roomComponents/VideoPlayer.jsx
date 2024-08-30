@@ -56,7 +56,7 @@ export default function VideoPlayer() {
   return (
     <div className="lg:flex">
       <div className="w-12/12 lg:w-8/12">
-        <div className="p-2 pb-0 text-slate-400 font-bold bg-slate-800">
+        <div className="p-2 pb-2 text-slate-400 font-bold bg-slate-800">
           <h1 className="text-xl leading-[10px] lg:text-sm">Hello Theatre</h1>
           <p className="text-[5px] leading-[10px] text-blue-500">
             Produced by NanAi
