@@ -1,9 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import VideoPlayer from "./_components/roomComponents/VideoPlayer";
 import ButtomBar from "./_components/shared/ButtomBar";
+import Authentication from "./_components/login/Authentication";
+import { AuthContex } from "@/Contexts/AuthContex";
 
 export default function Home() {
+  const { state, dispatch } = useContext(AuthContex);
+  const userData = state?.user;
   // State for managing room name
   const [roomName, setRoomName] = useState("");
 
@@ -20,6 +24,14 @@ export default function Home() {
     setRoomName(inputValue);
     setInputValue("");
   };
+
+  if (!userData) {
+    return (
+      <>
+        <Authentication />
+      </>
+    );
+  }
 
   return (
     <>
