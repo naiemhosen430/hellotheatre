@@ -46,14 +46,12 @@ export default function Authentication() {
     event.preventDefault();
     handleAuth(userInfo, "login");
     setUserInfo({ fullname: "", password: "", email: "" });
-    handleCloseClick();
   };
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
     handleAuth(userInfo, "createroom");
     setUserInfo({ fullname: "", password: "", email: "" });
-    handleCloseClick();
   };
 
   return (
@@ -85,6 +83,9 @@ export default function Authentication() {
             <h1 className="text-xl text-slate-400 font-bold py-2 lg:text-3xl">
               Login
             </h1>
+            {message && (
+              <p className="text-sm text-white p-2 text-center">message{}</p>
+            )}
             <form onSubmit={handleLogin}>
               <input
                 type="email"
@@ -128,6 +129,9 @@ export default function Authentication() {
             <h1 className="text-xl text-slate-400 font-bold py-2 lg:text-3xl">
               Create New Room
             </h1>
+            {message && (
+              <p className="text-sm text-white p-2 text-center">message{}</p>
+            )}
             <form onSubmit={handleFormSubmit}>
               <input
                 type="text"
