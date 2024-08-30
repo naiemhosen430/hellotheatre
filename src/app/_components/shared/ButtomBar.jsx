@@ -44,13 +44,13 @@ export default function ButtomBar({ roomName }) {
             <div className="flex items-center justify-end">
               <button
                 title="You are unmute now"
-                className="p-2 x-2 white bg-blue-800 rounded-xl lg:text-xl text-sm font-bold "
+                className="p-2 x-2 white bg-red-900 rounded-md mx-2 lg:text-xl text-sm font-bold "
               >
                 Join
               </button>
               <button
                 title="Share this room"
-                className="p-2 x-2 white bg-blue-800 rounded-xl lg:text-xl text-sm font-bold "
+                className="p-2 x-2 white bg-red-600 rounded-md mx-2 lg:text-xl text-sm font-bold "
               >
                 Your Room
               </button>
