@@ -34,6 +34,7 @@ export default function UseAuthContext() {
       }
       setMessage(response?.message);
     } catch (error) {
+      console.log(error);
       setMessage(error?.message);
       toast.error(
         error.response?.data?.message || "Signup failed. Please try again."
