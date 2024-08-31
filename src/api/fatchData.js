@@ -22,7 +22,10 @@ export const postApiCall = async (url, data) => {
     return {
       error,
       success: false,
-      message: "An error occurred while processing your request.",
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred while processing your request.",
     };
   }
 };
