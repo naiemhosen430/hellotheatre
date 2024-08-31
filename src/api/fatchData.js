@@ -20,6 +20,7 @@ export const postApiCall = async (url, data) => {
   } catch (error) {
     handleError(error);
     return {
+      error,
       success: false,
       message: "An error occurred while processing your request.",
     };
@@ -34,6 +35,7 @@ export const patchApiCall = async (url, data) => {
   } catch (error) {
     handleError(error);
     return {
+      error,
       success: false,
       message: "An error occurred while processing your request.",
     };
@@ -48,6 +50,7 @@ export const deleteApiCall = async (url) => {
   } catch (error) {
     handleError(error);
     return {
+      error,
       success: false,
       message: "An error occurred while processing your request.",
     };
