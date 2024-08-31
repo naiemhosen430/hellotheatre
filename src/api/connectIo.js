@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 
 function connectIo(userId) {
   // const socket = io("http://localhost:5000");
-  const socket = io("https://api-diahoo.vercel.app");
+  const socket = io("https://api-hellotheatre.onrender.com");
 
   socket.on("connect", () => {
     console.log("Connected with socket ID:", socket.id);
