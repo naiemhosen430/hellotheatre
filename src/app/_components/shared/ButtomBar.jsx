@@ -3,6 +3,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { Container } from "react-bootstrap";
 import { AuthContex } from "@/Contexts/AuthContex";
 import connectIo from "@/api/connectIo";
+import MyRoom from "../rooms/MyRoom";
 
 export default function ButtomBar({ roomName }) {
   const socket = connectIo();
@@ -13,7 +14,7 @@ export default function ButtomBar({ roomName }) {
   const [peerConnection, setPeerConnection] = useState(null);
   const [joined, setJoined] = useState(false);
   const [statusMessage, setStatusMessage] = useState(""); // State to hold the status message
-
+  const [joinedMyRoomState, setJoinedMyRoomState] = useState(false);
   useEffect(() => {
     if (peerConnection) {
       socket.on("signal", async (signal) => {
@@ -108,6 +109,9 @@ export default function ButtomBar({ roomName }) {
 
   return (
     <>
+      {joinedMyRoomState && (
+        <MyRoom setJoinedMyRoomState={setJoinedMyRoomState} />
+      )}
       {joined ? (
         <div className="fixed h-screen w-screen flex items-center justify-center z-50 top-0 left-0 bg-black">
           {/* Show the video stream from the room owner */}
@@ -169,6 +173,7 @@ export default function ButtomBar({ roomName }) {
                   </button>
                   <button
                     title="Share this room"
+                    onClick={() => setJoinedMyRoomState(true)}
                     className="p-2 px-2 white text-slate-300 bg-red-600 rounded-md mx-2 lg:text-xl text-sm font-bold "
                   >
                     Your Room
