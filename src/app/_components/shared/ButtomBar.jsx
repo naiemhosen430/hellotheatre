@@ -103,22 +103,56 @@ export default function BottomBar({ roomName }) {
     };
   }, [stream]);
 
-  const handleLogin = async (event) => {
+  const handleJoin = async (event) => {
     event.preventDefault();
 
+    // Viewer joins the room by username
     socket.emit("join-room", { username: roomUserName });
 
+    // When the viewer successfully joins the room
     socket.on("joined-room", () => {
-      setJoined(true); // Viewer successfully joined the room
+      setJoined(true); // Viewer joined, set state to show the stream
     });
 
+    // Error handling for room not found
     socket.on("roomNotFound", () => {
       setStatusMessage("Room not available.");
     });
 
-    socket.on("error", (error) => {
-      setStatusMessage(`Error: ${error.message}`);
+    // WebRTC signaling process to establish connection with host
+    socket.on("signal", ({ signal, id }) => {
+      const peer = peersRef.current[id];
+      if (peer) peer.signal(signal);
     });
+
+    // Handle receiving the stream from the host
+    const createPeer = (userId, initiator = false) => {
+      const peer = new SimplePeer({
+        initiator, // Viewer is not an initiator, so `initiator = false`
+        trickle: false, // Disable trickle ICE
+      });
+
+      // Handle signaling
+      peer.on("signal", (signal) => {
+        socket.emit("signal", {
+          signal,
+          username: userData?.username, // Room name
+          id: userId, // Target peer
+        });
+      });
+
+      // When viewer receives the host's stream
+      peer.on("stream", (remoteStream) => {
+        const remoteVideo = document.getElementById("remoteVideo");
+        if (remoteVideo) {
+          remoteVideo.srcObject = remoteStream;
+          remoteVideo.play();
+        }
+      });
+
+      // Save the peer connection for later reference
+      peersRef.current[userId] = peer;
+    };
   };
 
   return (
@@ -142,7 +176,7 @@ export default function BottomBar({ roomName }) {
               <div className="text-white text-lg mb-4">
                 {statusMessage && <p>{statusMessage}</p>}
               </div>
-              <form onSubmit={handleLogin}>
+              <form onSubmit={handleJoin}>
                 <input
                   type="text"
                   name="roomusername"
