@@ -11,7 +11,6 @@ export default function BottomBar({ roomName }) {
   const userData = state?.user;
   const [joinState, setJoinState] = useState(false);
   const [roomUserName, setRoomUserName] = useState("");
-  const [peerConnection, setPeerConnection] = useState(null);
   const [joined, setJoined] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [joinedMyRoomState, setJoinedMyRoomState] = useState(false);
@@ -19,82 +18,34 @@ export default function BottomBar({ roomName }) {
 
   const peersRef = useRef({});
 
+  // Create room (Host)
   const createRoom = () => {
-    console.log(userData?.username);
     if (userData?.username) {
       socket.emit("create-room", userData?.username);
     }
   };
 
   useEffect(() => {
+    // Host creates a room and starts sharing
     socket.on("room-created", () => {
-      startSharing(); // Start sharing once the room is created
+      startSharing();
       setJoinedMyRoomState(true);
     });
 
-    socket.on("joined-room", ({ username }) => {
-      console.log(`${username} joined the room`);
-    });
-
+    // Notify host when a user joins the room
     socket.on("user-joined", (userId) => {
-      createPeer(userId, false); // Create a peer for the viewer, the viewer only watches
+      console.log(`User joined: ${userId}`);
+      createPeer(userId, true); // Host creates peer connection with viewer
     });
 
+    // Signal handling for WebRTC connection
     socket.on("signal", ({ signal, id }) => {
+      console.log("Received signal from viewer");
       const peer = peersRef.current[id];
-      if (peer) peer.signal(signal);
-    });
-
-    const createPeer = (userId, initiator = false) => {
-      const peer = new SimplePeer({
-        initiator,
-        trickle: false,
-        stream: initiator ? stream : null, // Host sends stream, viewer doesn't
-      });
-
-      peer.on("signal", (signal) => {
-        socket.emit("signal", {
-          signal,
-          username: userData?.username,
-          id: userId,
-        });
-      });
-
-      peer.on("stream", (remoteStream) => {
-        // Viewer gets the host's stream
-        const remoteVideo = document.getElementById("remoteVideo");
-        if (remoteVideo) {
-          remoteVideo.srcObject = remoteStream;
-          remoteVideo.play();
-        }
-      });
-
-      peersRef.current[userId] = peer;
-    };
-
-    const startSharing = async () => {
-      try {
-        const displayStream = await navigator.mediaDevices.getDisplayMedia({
-          video: true,
-          audio: true,
-        });
-        setStream(displayStream);
-
-        // Show the host's stream
-        const video = document.createElement("video");
-        video.srcObject = displayStream;
-        video.muted = true;
-        video.play();
-        document.body.appendChild(video);
-
-        // Host initiates a peer connection for each viewer
-        Object.keys(peersRef.current).forEach((userId) => {
-          createPeer(userId, true); // Initiator = true for the host
-        });
-      } catch (err) {
-        console.error("Error starting display sharing: ", err);
+      if (peer) {
+        peer.signal(signal);
       }
-    };
+    });
 
     return () => {
       socket.off("room-created");
@@ -103,46 +54,102 @@ export default function BottomBar({ roomName }) {
     };
   }, [stream]);
 
+  // Host starts sharing the screen
+  const startSharing = async () => {
+    try {
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true,
+      });
+      setStream(displayStream);
+
+      // Show the host's stream locally
+      const video = document.createElement("video");
+      video.srcObject = displayStream;
+      video.muted = true;
+      video.play();
+      document.body.appendChild(video);
+
+      // Initialize peer connections for each user
+      Object.keys(peersRef.current).forEach((userId) => {
+        createPeer(userId, true); // Initiator = true for host
+      });
+    } catch (err) {
+      console.error("Error starting display sharing: ", err);
+    }
+  };
+
+  const createPeer = (userId, initiator = false) => {
+    const peer = new SimplePeer({
+      initiator,
+      trickle: false,
+      stream: initiator ? stream : null, // Host sends stream, viewer receives
+    });
+
+    peer.on("signal", (signal) => {
+      console.log("Sending signal to server");
+      socket.emit("signal", {
+        signal,
+        username: userData?.username,
+        id: userId,
+      });
+    });
+
+    peer.on("stream", (remoteStream) => {
+      console.log("Received remote stream from host");
+      const remoteVideo = document.getElementById("remoteVideo");
+      if (remoteVideo) {
+        remoteVideo.srcObject = remoteStream;
+        remoteVideo.play();
+      }
+    });
+
+    peersRef.current[userId] = peer;
+  };
+
+  // Viewer joins the room
   const handleJoin = async (event) => {
     event.preventDefault();
 
-    // Viewer joins the room by username
     socket.emit("join-room", { username: roomUserName });
 
-    // When the viewer successfully joins the room
     socket.on("joined-room", () => {
-      setJoined(true); // Viewer joined, set state to show the stream
+      console.log("Successfully joined room");
+      setJoined(true); // Viewer has joined
     });
 
-    // Error handling for room not found
     socket.on("roomNotFound", () => {
       setStatusMessage("Room not available.");
     });
 
-    // WebRTC signaling process to establish connection with host
+    // Handle WebRTC signaling
     socket.on("signal", ({ signal, id }) => {
+      console.log("Received signal from host");
       const peer = peersRef.current[id];
-      if (peer) peer.signal(signal);
+      if (peer) {
+        peer.signal(signal);
+      } else {
+        console.warn("Peer not found for signaling");
+      }
     });
 
-    // Handle receiving the stream from the host
     const createPeer = (userId, initiator = false) => {
       const peer = new SimplePeer({
-        initiator, // Viewer is not an initiator, so `initiator = false`
-        trickle: false, // Disable trickle ICE
+        initiator, // Viewer is not initiator
+        trickle: false,
       });
 
-      // Handle signaling
       peer.on("signal", (signal) => {
+        console.log("Sending signal to server");
         socket.emit("signal", {
           signal,
-          username: userData?.username, // Room name
-          id: userId, // Target peer
+          username: userData?.username,
+          id: userId,
         });
       });
 
-      // When viewer receives the host's stream
       peer.on("stream", (remoteStream) => {
+        console.log("Received remote stream from host");
         const remoteVideo = document.getElementById("remoteVideo");
         if (remoteVideo) {
           remoteVideo.srcObject = remoteStream;
@@ -150,7 +157,6 @@ export default function BottomBar({ roomName }) {
         }
       });
 
-      // Save the peer connection for later reference
       peersRef.current[userId] = peer;
     };
   };
@@ -207,7 +213,6 @@ export default function BottomBar({ roomName }) {
                 <span className="p-2 w-6/12 text-white lg:text-2xl font-bold text-lg">
                   {userData?.username}
                 </span>
-
                 <div className="flex items-center justify-end">
                   <button
                     onClick={() => setJoinState(true)}
@@ -216,9 +221,7 @@ export default function BottomBar({ roomName }) {
                     Join
                   </button>
                   <button
-                    onClick={() => {
-                      createRoom(); // Host creates the room
-                    }}
+                    onClick={createRoom}
                     className="p-2 px-2 white text-slate-300 bg-red-600 rounded-md mx-2 lg:text-xl text-sm font-bold "
                   >
                     Your Room
