@@ -1,11 +1,11 @@
 "use client";
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import { Container } from "react-bootstrap";
 import { AuthContex } from "@/Contexts/AuthContex";
 import connectIo from "@/api/connectIo";
 import MyRoom from "../rooms/MyRoom";
 
-export default function ButtomBar({ roomName }) {
+export default function BottomBar({ roomName }) {
   const socket = connectIo();
   const { state } = useContext(AuthContex);
   const userData = state?.user;
@@ -13,98 +13,112 @@ export default function ButtomBar({ roomName }) {
   const [roomUserName, setRoomUserName] = useState("");
   const [peerConnection, setPeerConnection] = useState(null);
   const [joined, setJoined] = useState(false);
-  const [statusMessage, setStatusMessage] = useState(""); // State to hold the status message
+  const [statusMessage, setStatusMessage] = useState("");
   const [joinedMyRoomState, setJoinedMyRoomState] = useState(false);
+  const [stream, setStream] = useState(null);
+
+  const peersRef = useRef({});
+
+  const createRoom = () => {
+    console.log(userData?.username);
+    if (userData?.username) {
+      socket.emit("create-room", userData?.username);
+    }
+  };
+
   useEffect(() => {
-    if (peerConnection) {
-      socket.on("signal", async (signal) => {
-        if (signal.description) {
-          await peerConnection.setRemoteDescription(
-            new RTCSessionDescription(signal.description)
-          );
-          if (signal.description.type === "offer") {
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            socket.emit("signal", userData?.username, {
-              description: peerConnection.localDescription,
-            });
-          }
-        } else if (signal.candidate) {
-          await peerConnection.addIceCandidate(
-            new RTCIceCandidate(signal.candidate)
-          );
+    socket.on("room-created", () => {
+      startSharing(); // Start sharing once the room is created
+      setJoinedMyRoomState(true);
+    });
+
+    socket.on("joined-room", ({ username }) => {
+      console.log(`${username} joined the room`);
+    });
+
+    socket.on("user-joined", (userId) => {
+      createPeer(userId, false); // Create a peer for the viewer, the viewer only watches
+    });
+
+    socket.on("signal", ({ signal, id }) => {
+      const peer = peersRef.current[id];
+      if (peer) peer.signal(signal);
+    });
+
+    const createPeer = (userId, initiator = false) => {
+      const peer = new SimplePeer({
+        initiator,
+        trickle: false,
+        stream: initiator ? stream : null, // Host sends stream, viewer doesn't
+      });
+
+      peer.on("signal", (signal) => {
+        socket.emit("signal", {
+          signal,
+          username: userData?.username,
+          id: userId,
+        });
+      });
+
+      peer.on("stream", (remoteStream) => {
+        // Viewer gets the host's stream
+        const remoteVideo = document.getElementById("remoteVideo");
+        if (remoteVideo) {
+          remoteVideo.srcObject = remoteStream;
+          remoteVideo.play();
         }
       });
-    }
 
-    return () => {
-      if (peerConnection) {
-        socket.off("signal");
+      peersRef.current[userId] = peer;
+    };
+
+    const startSharing = async () => {
+      try {
+        const displayStream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: true,
+        });
+        setStream(displayStream);
+
+        // Show the host's stream
+        const video = document.createElement("video");
+        video.srcObject = displayStream;
+        video.muted = true;
+        video.play();
+        document.body.appendChild(video);
+
+        // Host initiates a peer connection for each viewer
+        Object.keys(peersRef.current).forEach((userId) => {
+          createPeer(userId, true); // Initiator = true for the host
+        });
+      } catch (err) {
+        console.error("Error starting display sharing: ", err);
       }
     };
-  }, [peerConnection]);
+
+    return () => {
+      socket.off("room-created");
+      socket.off("user-joined");
+      socket.off("signal");
+    };
+  }, [stream]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
 
-    // Emit an event to join the room with the username
-    socket.emit("joinRoom", userData?.username, roomUserName);
-    console.log(roomUserName);
+    socket.emit("join-room", { username: roomUserName });
 
-    socket.on("userJoined", async (username) => {
-      console.log(`${username} joined the room`);
-
-      // Capture the screen instead of the webcam
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-      });
-
-      const localVideo = document.getElementById("localVideo");
-      if (localVideo) {
-        localVideo.srcObject = stream;
-      }
-
-      const pc = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-      });
-      setPeerConnection(pc);
-
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit("signal", userData?.username, {
-            candidate: event.candidate,
-          });
-        }
-      };
-
-      pc.ontrack = (event) => {
-        const remoteVideo = document.getElementById("remoteVideo");
-        if (remoteVideo) {
-          remoteVideo.srcObject = event.streams[0];
-        }
-      };
-
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      socket.emit("signal", userData?.username, {
-        description: pc.localDescription,
-      });
-
-      setJoined(true); // Set joined state to true
-      setStatusMessage(""); // Clear any previous status messages
+    socket.on("joined-room", () => {
+      setJoined(true); // Viewer successfully joined the room
     });
 
     socket.on("roomNotFound", () => {
-      setStatusMessage("Room not available."); // Set the status message if the room is not found
+      setStatusMessage("Room not available.");
     });
 
     socket.on("error", (error) => {
-      setStatusMessage(`Error: ${error.message}`); // Handle other errors
+      setStatusMessage(`Error: ${error.message}`);
     });
-
-    // setRoomUserName("");
   };
 
   return (
@@ -114,7 +128,6 @@ export default function ButtomBar({ roomName }) {
       )}
       {joined ? (
         <div className="fixed h-screen w-screen flex items-center justify-center z-50 top-0 left-0 bg-black">
-          {/* Show the video stream from the room owner */}
           <video
             id="remoteVideo"
             autoPlay
@@ -127,8 +140,7 @@ export default function ButtomBar({ roomName }) {
           {joinState && (
             <div className="fixed h-screen w-screen flex p-5 items-center justify-center z-50 top-0 left-0 bg-black">
               <div className="text-white text-lg mb-4">
-                {statusMessage && <p>{statusMessage}</p>}{" "}
-                {/* Show status message */}
+                {statusMessage && <p>{statusMessage}</p>}
               </div>
               <form onSubmit={handleLogin}>
                 <input
@@ -140,7 +152,6 @@ export default function ButtomBar({ roomName }) {
                   placeholder="Enter room username"
                   required
                 />
-
                 <button
                   type="submit"
                   className="w-full p-2 mt-4 bg-blue-900 text-white rounded"
@@ -165,15 +176,15 @@ export default function ButtomBar({ roomName }) {
 
                 <div className="flex items-center justify-end">
                   <button
-                    title="You are unmute now"
                     onClick={() => setJoinState(true)}
                     className="p-2 px-2 white text-slate-300 bg-red-900 rounded-md mx-2 lg:text-xl text-sm font-bold "
                   >
                     Join
                   </button>
                   <button
-                    title="Share this room"
-                    onClick={() => setJoinedMyRoomState(true)}
+                    onClick={() => {
+                      createRoom(); // Host creates the room
+                    }}
                     className="p-2 px-2 white text-slate-300 bg-red-600 rounded-md mx-2 lg:text-xl text-sm font-bold "
                   >
                     Your Room
