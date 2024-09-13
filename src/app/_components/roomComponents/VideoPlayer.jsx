@@ -1,16 +1,25 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { Container } from "react-bootstrap";
 import { FaPlus } from "react-icons/fa";
 import { RxAvatar } from "react-icons/rx";
 import { IoMdSettings } from "react-icons/io";
+import socket from "@/api/connectIo";
+import { AuthContex } from "@/Contexts/AuthContex";
+import { useRouter } from "next/navigation";
+import { RoomContex } from "@/Contexts/RoomContext";
 
-export default function VideoPlayer({ setJoinedMyRoomState }) {
+export default function VideoPlayer() {
   const [videoId, setVideoId] = useState("TlC_NCowUuQ"); // Default YouTube video ID
   const [videoUrl, setVideoUrl] = useState(null); // For local video playback
   const [errorData, setErrorData] = useState("");
   const inputRef = useRef(null);
   const fileInputRef = useRef(null); // Ref for the hidden file input
+  const { state } = useContext(AuthContex);
+  const userData = state?.user;
+  const router = useRouter();
+  const { roomState, roomDispatch } = useContext(RoomContex);
+  const { room, joinedroom } = roomState;
 
   // Handles YouTube URL input
   const handleVideoChange = (url) => {
@@ -62,13 +71,28 @@ export default function VideoPlayer({ setJoinedMyRoomState }) {
 
   //  for leaving room
   const leaveRoom = () => {
-    setJoinedMyRoomState(false);
+    socket.emit("close-room", { userid: userData?._id });
   };
+
+  useEffect(() => {
+    socket.on("room-closed", () => {
+      console.log("Room has been closed");
+      roomDispatch({
+        type: "ADD_JOINEDROOM_DATA",
+        payload: null,
+      });
+      router.push("/");
+    });
+
+    return () => {
+      socket.off("room-closed"); // Clean up the listener
+    };
+  }, [socket]);
 
   return (
     <>
       {settingToggleBox && (
-        <div className="fixed top-0 right-0 h-screen w-screen bg-black/50 flex justify-end">
+        <div className="fixed z-[500] top-0 right-0 h-screen w-screen bg-black/50 flex justify-end">
           <div className="lg:w-3/12 w-8/12 h-screen bg-slate-950 shadow-lg">
             <h1 className="p-2 border-b-2 lg:p-5 text-white font-bold text-2xl lg:text-4xl">
               Room Setting
@@ -81,7 +105,7 @@ export default function VideoPlayer({ setJoinedMyRoomState }) {
                 onClick={leaveRoom}
                 className=" bg-slate-900 text-2xl font-bold text-slate-300 w-full text-left p-2 px-4"
               >
-                Leave
+                Close Room
               </button>{" "}
               <button
                 onClick={togleSettingBox}
@@ -97,13 +121,20 @@ export default function VideoPlayer({ setJoinedMyRoomState }) {
       <div className="lg:flex">
         <div className="w-12/12 lg:w-8/12">
           <div className=" flex items-center justify-between p-2 text-slate-400 font-bold bg-slate-800">
-            <div className="">
-              <h1 className="text-xl leading-[10px] lg:text-sm">
-                Hello Theatre
-              </h1>
-              <p className="text-[5px] m-0 leading-[10px] text-blue-500">
-                Produced by NanAi
-              </p>
+            <div className="flex items-center">
+              <div>
+                <h1 className="text-lg leading-[10px] lg:text-xl">
+                  Hello Theatre
+                </h1>
+                <p className="text-[5px] m-0 leading-[10px] text-blue-500">
+                  Produced by NanAi
+                </p>
+              </div>
+              <div className=" px-4">
+                <h1 className=" leading-[10px] text-sm lg:text-xl text-white font-bold ">
+                  {joinedroom?.fullname}
+                </h1>
+              </div>
             </div>
             <div>
               <IoMdSettings
@@ -156,7 +187,7 @@ export default function VideoPlayer({ setJoinedMyRoomState }) {
                 Clear Video
               </button>
               <button
-                className="bg-slate-700 w-1/12 text-white px-1 py-2 m-1 text-center rounded-xl lg:text-2xl text-xl"
+                className="bg-slate-700 w-1/12 text-white px-1 py-2 m-1 text-center flex items-center justify-center rounded-xl lg:text-2xl text-xl"
                 onClick={handlePlayFromDevice}
               >
                 <FaPlus />
@@ -174,7 +205,7 @@ export default function VideoPlayer({ setJoinedMyRoomState }) {
 
         <div className="w-12/12 lg:w-4/12">
           <h1 className="p-2 text-slate-400 bg-slate-800 text-xl lg:text-sm">
-            People (12)
+            People ({joinedroom?.users?.length})
           </h1>
           <div className="p-4 px-2">
             <div className="flex">

@@ -4,6 +4,7 @@ import Head from "next/head";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Container } from "react-bootstrap";
 import AuthContexProvider from "@/Contexts/AuthContex";
+import RoomContexProvider from "@/Contexts/RoomContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,7 +24,9 @@ export default function RootLayout({ children }) {
       </Head>
       <body className={inter.className}>
         <AuthContexProvider>
-          <div className="bg-[#1E201E] min-h-screen">{children}</div>
+          <RoomContexProvider>
+            <div className="bg-[#1E201E] min-h-screen">{children}</div>
+          </RoomContexProvider>
         </AuthContexProvider>
       </body>
     </html>

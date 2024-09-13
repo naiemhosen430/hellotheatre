@@ -30,6 +30,7 @@ export default function UseAuthContext() {
           `${action.charAt(0).toUpperCase() + action.slice(1)} successful!`
         );
         router.push("/", { scroll: true });
+        window.location.reload();
         setMessage(response?.message);
       }
       setMessage(response?.message);

@@ -5,3 +5,28 @@
 body {
   touch-action: pan-y;
 }
+
+
+
+.loading {
+  animation: loading 1s ease-out infinite alternate;
+  background: linear-gradient(to right, #5c1e1e, #29295c);
+  background-size: 200% 100%;
+}
+
+.loadingbig {
+  animation: loading 1s ease-out infinite alternate;
+  background: linear-gradient(to right, #5c1e1e, #29295c);
+  background-size: 200% 100%;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 0 0;
+    opacity: 50%;
+  }
+  100% {
+    background-position: 100% 0;
+    opacity: 80%;
+  }
+}
