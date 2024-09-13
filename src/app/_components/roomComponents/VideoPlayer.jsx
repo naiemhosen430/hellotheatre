@@ -80,11 +80,13 @@ export default function VideoPlayer() {
   const leaveRoom = () => {
     socket.emit("close-room", { userid: userData?._id });
   };
-  const localStream = new MediaStream();
-  const peers = {};
+  const [localStream, set_localStream] = useState(null);
 
   // Set up WebRTC peer connections
   useEffect(() => {
+    const localStreamdata = new MediaStream();
+    set_localStream(localStreamdata);
+    const peers = {};
     // Handle incoming connections
     socket.on("new-user", (id) => {
       console.log({ useid: id });
