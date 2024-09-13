@@ -17,7 +17,7 @@ export default function page() {
     router.push("/", { scroll: true });
   }
 
-
+  console.log({ userData, joinedroom });
 
   // // Host starts sharing the screen
   // const startSharing = async () => {

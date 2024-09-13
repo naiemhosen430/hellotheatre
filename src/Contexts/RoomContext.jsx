@@ -12,8 +12,22 @@ const roomReducer = (roomState, action) => {
     case "ADD_JOINEDROOM_DATA":
       return { ...roomState, joinedroom: action.payload };
     case "ADD_NEWMEMBER":
-      const newData = roomState?.joinedroom?.users?.push(action.payload);
-      return { ...roomState, joinedroom: newData };
+      const users = roomState?.joinedroom?.users || [];
+
+      if (!users.includes(action.payload)) {
+        const updatedUsers = [...users, action.payload];
+
+        return {
+          ...roomState,
+          joinedroom: {
+            ...roomState.joinedroom,
+            users: updatedUsers,
+          },
+        };
+      } else {
+        return roomState;
+      }
+
     default:
       return roomState;
   }

@@ -1,16 +1,46 @@
-import React from "react";
+"use client";
+import React, { useContext, useEffect } from "react";
+import { Container } from "react-bootstrap";
+import socket from "@/api/connectIo";
+import { RoomContex } from "@/Contexts/RoomContext";
+import DisplayHostVideo from "../roomComponents/DisplayHostVideo";
 
 export default function OtherRoom() {
+  const { roomState, roomDispatch } = useContext(RoomContex);
+  useEffect(() => {
+    // Notify host when a user joins the room
+    socket.on("user-joined", (userId) => {
+      console.log(userId);
+      roomDispatch({
+        type: "ADD_NEWMEMBER",
+        payload: userId,
+      });
+      console.log(`User joined: ${userId}`);
+      // createPeer(userId, true); // Host creates peer connection with viewer
+    });
+
+    // // Signal handling for WebRTC connection
+    // socket.on("signal", ({ signal, id }) => {
+    //   console.log("Received signal from viewer");
+    //   const peer = peersRef.current[id];
+    //   if (peer) {
+    //     peer.signal(signal);
+    //   }
+    // });
+
+    return () => {
+      socket.off("room-created");
+      socket.off("user-joined");
+      socket.off("signal");
+    };
+  }, []);
   return (
     <>
-      <div className="fixed h-screen w-screen flex items-center justify-center z-50 top-0 left-0 bg-black">
-        <video
-          id="remoteVideo"
-          autoPlay
-          className="w-full h-full"
-          style={{ backgroundColor: "black" }}
-        ></video>
-      </div>
+      <Container className="  bg-black  h-screen px-0">
+        <div>
+          <DisplayHostVideo />
+        </div>
+      </Container>
     </>
   );
 }

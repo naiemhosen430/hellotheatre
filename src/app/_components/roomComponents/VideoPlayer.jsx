@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useRef, useEffect, useContext } from "react";
-import { Container } from "react-bootstrap";
 import { FaPlus } from "react-icons/fa";
 import { RxAvatar } from "react-icons/rx";
 import { IoMdSettings } from "react-icons/io";
@@ -9,12 +8,21 @@ import { AuthContex } from "@/Contexts/AuthContex";
 import { useRouter } from "next/navigation";
 import { RoomContex } from "@/Contexts/RoomContext";
 
+// Configuration for WebRTC
+const configuration = {
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+};
+
 export default function VideoPlayer() {
   const [videoId, setVideoId] = useState("TlC_NCowUuQ"); // Default YouTube video ID
   const [videoUrl, setVideoUrl] = useState(null); // For local video playback
   const [errorData, setErrorData] = useState("");
+  const [settingToggleBox, setSettingToggleBox] = useState(false);
+  const [peerConnections, setPeerConnections] = useState({});
+  const [remoteStreams, setRemoteStreams] = useState({});
   const inputRef = useRef(null);
   const fileInputRef = useRef(null); // Ref for the hidden file input
+  const localVideoRef = useRef(null); // Ref for the local video playback
   const { state } = useContext(AuthContex);
   const userData = state?.user;
   const router = useRouter();
@@ -63,31 +71,107 @@ export default function VideoPlayer() {
     setVideoId(""); // Clear YouTube video ID
   };
 
-  const [settingToggleBox, setSettingToggleBox] = useState(false);
-
+  // Toggle settings box
   const togleSettingBox = () => {
     setSettingToggleBox(!settingToggleBox);
   };
 
-  //  for leaving room
+  // Handle leaving the room
   const leaveRoom = () => {
     socket.emit("close-room", { userid: userData?._id });
   };
+  const localStream = new MediaStream();
+  const peers = {};
 
+  // Set up WebRTC peer connections
   useEffect(() => {
-    socket.on("room-closed", () => {
-      console.log("Room has been closed");
-      roomDispatch({
-        type: "ADD_JOINEDROOM_DATA",
-        payload: null,
-      });
-      router.push("/");
+    // Handle incoming connections
+    socket.on("new-user", (id) => {
+      console.log({ useid: id });
+      createPeerConnection(id);
     });
 
-    return () => {
-      socket.off("room-closed"); // Clean up the listener
+    // Get local media stream
+    navigator.mediaDevices
+      .getUserMedia({ video: false, audio: true })
+      .then((stream) => {
+        // localVideoRef.current.srcObject = stream;
+        localStream.addTrack(stream.getAudioTracks()[0]);
+
+        // Handle offer
+        socket.on("offer", async ({ id, offer }) => {
+          const pc = createPeerConnection(id);
+          await pc.setRemoteDescription(new RTCSessionDescription(offer));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          socket.emit("answer", { id, answer });
+        });
+
+        // Handle answer
+        socket.on("answer", async ({ id, answer }) => {
+          const pc = peers[id];
+          await pc.setRemoteDescription(new RTCSessionDescription(answer));
+        });
+
+        // Handle ICE candidates
+        socket.on("ice-candidate", async ({ id, candidate }) => {
+          const pc = peers[id];
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          } catch (e) {
+            console.error("Error adding received ice candidate", e);
+          }
+        });
+
+        // Handle room closure
+        socket.on("room-closed", () => {
+          console.log("Room has been closed");
+          roomDispatch({
+            type: "ADD_JOINEDROOM_DATA",
+            payload: null,
+          });
+          router.push("/");
+        });
+
+        // Cleanup
+        return () => {
+          Object.values(peers).forEach((pc) => pc.close());
+          socket.off("new-user");
+          socket.off("offer");
+          socket.off("answer");
+          socket.off("ice-candidate");
+          socket.off("room-closed");
+        };
+      })
+      .catch((error) => console.error("Error accessing media devices.", error));
+  }, [router, roomDispatch, room?.id]);
+
+  // Create peer connection
+  function createPeerConnection(id) {
+    const pc = new RTCPeerConnection(configuration);
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("ice-candidate", { id, candidate: event.candidate });
+      }
     };
-  }, [socket]);
+
+    pc.ontrack = (event) => {
+      setRemoteStreams((prev) => ({
+        ...prev,
+        [id]: event.streams[0],
+      }));
+    };
+
+    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+
+    setPeerConnections((prev) => ({
+      ...prev,
+      [id]: pc,
+    }));
+
+    return pc;
+  }
 
   return (
     <>
@@ -98,18 +182,18 @@ export default function VideoPlayer() {
               Room Setting
             </h1>
             <div className="p-2 lg:p-5">
-              <button className=" bg-slate-900 text-2xl font-bold text-slate-300 w-full text-left p-2 px-4">
+              <button className="bg-slate-900 text-2xl font-bold text-slate-300 w-full text-left p-2 px-4">
                 Minimize
               </button>
               <button
                 onClick={leaveRoom}
-                className=" bg-slate-900 text-2xl font-bold text-slate-300 w-full text-left p-2 px-4"
+                className="bg-slate-900 text-2xl font-bold text-slate-300 w-full text-left p-2 px-4"
               >
                 Close Room
-              </button>{" "}
+              </button>
               <button
                 onClick={togleSettingBox}
-                className=" bg-slate-900 text-2xl font-bold text-slate-300 w-full text-left p-2 px-4"
+                className="bg-slate-900 text-2xl font-bold text-slate-300 w-full text-left p-2 px-4"
               >
                 Close
               </button>
@@ -120,7 +204,7 @@ export default function VideoPlayer() {
 
       <div className="lg:flex">
         <div className="w-12/12 lg:w-8/12">
-          <div className=" flex items-center justify-between p-2 text-slate-400 font-bold bg-slate-800">
+          <div className="flex items-center justify-between p-2 text-slate-400 font-bold bg-slate-800">
             <div className="flex items-center">
               <div>
                 <h1 className="text-lg leading-[10px] lg:text-xl">
@@ -130,8 +214,8 @@ export default function VideoPlayer() {
                   Produced by NanAi
                 </p>
               </div>
-              <div className=" px-4">
-                <h1 className=" leading-[10px] text-sm lg:text-xl text-white font-bold ">
+              <div className="px-4">
+                <h1 className="leading-[10px] text-sm lg:text-xl text-white font-bold">
                   {joinedroom?.fullname}
                 </h1>
               </div>
@@ -147,6 +231,7 @@ export default function VideoPlayer() {
             {/* Conditionally render iframe or video element based on source */}
             {videoUrl ? (
               <video
+                ref={localVideoRef}
                 width="100%"
                 height="500"
                 controls
@@ -208,16 +293,18 @@ export default function VideoPlayer() {
             People ({joinedroom?.users?.length})
           </h1>
           <div className="p-4 px-2">
-            <div className="flex">
-              <div className="flex p-2 text-white justify-center">
-                <RxAvatar className="lg:text-5xl text-4xl" />
-              </div>
-              <div className="p-2">
-                <div className="shadow-2xl lg:text-sm text-[10px] bg-black text-white flex items-center justify-center border-blue-500 p-2 px-3 border rounded-xl">
-                  Hey there, this project is still under construction
+            {joinedroom?.users?.map((user) => (
+              <div key={user} className="flex mb-4">
+                <div className="flex p-2 text-white justify-center">
+                  <RxAvatar className="lg:text-5xl text-4xl" />
+                </div>
+                <div className="p-2">
+                  <div className="shadow-2xl lg:text-sm text-[10px] bg-black text-white flex items-center justify-center border-blue-500 p-2 px-3 border rounded-xl">
+                    {user}
+                  </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
