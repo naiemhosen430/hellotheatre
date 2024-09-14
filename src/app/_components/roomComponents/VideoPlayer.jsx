@@ -7,6 +7,7 @@ import socket from "@/api/connectIo";
 import { AuthContex } from "@/Contexts/AuthContex";
 import { useRouter } from "next/navigation";
 import { RoomContex } from "@/Contexts/RoomContext";
+import StagePerson from "./StagePerson";
 
 // Configuration for WebRTC
 const configuration = {
@@ -27,7 +28,7 @@ export default function VideoPlayer() {
   const userData = state?.user;
   const router = useRouter();
   const { roomState, roomDispatch } = useContext(RoomContex);
-  const { room, joinedroom } = roomState;
+  const { room, joinedroom, room_members } = roomState;
 
   // Handles YouTube URL input
   const handleVideoChange = (url) => {
@@ -93,6 +94,26 @@ export default function VideoPlayer() {
       createPeerConnection(id);
     });
 
+    // Handle room closure
+    socket.on("room-closed", () => {
+      console.log("Room has been closed");
+      roomDispatch({
+        type: "ADD_JOINEDROOM_DATA",
+        payload: null,
+      });
+      router.push("/");
+    });
+
+    // Handle room closure
+    socket.on("viewer-left", () => {
+      console.log("a viewer has left");
+      roomDispatch({
+        type: "ADD_JOINEDROOM_DATA",
+        payload: null,
+      });
+      router.push("/");
+    });
+
     // Get local media stream
     navigator.mediaDevices
       .getUserMedia({ video: false, audio: true })
@@ -125,16 +146,6 @@ export default function VideoPlayer() {
           }
         });
 
-        // Handle room closure
-        socket.on("room-closed", () => {
-          console.log("Room has been closed");
-          roomDispatch({
-            type: "ADD_JOINEDROOM_DATA",
-            payload: null,
-          });
-          router.push("/");
-        });
-
         // Cleanup
         return () => {
           Object.values(peers).forEach((pc) => pc.close());
@@ -165,7 +176,7 @@ export default function VideoPlayer() {
       }));
     };
 
-    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+    // localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
 
     setPeerConnections((prev) => ({
       ...prev,
@@ -174,6 +185,8 @@ export default function VideoPlayer() {
 
     return pc;
   }
+
+  console.log({ room_members });
 
   return (
     <>
@@ -295,16 +308,9 @@ export default function VideoPlayer() {
             People ({joinedroom?.users?.length})
           </h1>
           <div className="p-4 px-2">
-            {joinedroom?.users?.map((user) => (
-              <div key={user} className="flex mb-4">
-                <div className="flex p-2 text-white justify-center">
-                  <RxAvatar className="lg:text-5xl text-4xl" />
-                </div>
-                <div className="p-2">
-                  <div className="shadow-2xl lg:text-sm text-[10px] bg-black text-white flex items-center justify-center border-blue-500 p-2 px-3 border rounded-xl">
-                    {user}
-                  </div>
-                </div>
+            {room_members?.map((user) => (
+              <div key={user} className="inline-block m-2">
+                <StagePerson id={user?.user_id} />
               </div>
             ))}
           </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useState,useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import VideoPlayer from "./_components/roomComponents/VideoPlayer";
 import ButtomBar from "./_components/shared/ButtomBar";
 import Authentication from "./_components/login/Authentication";
@@ -20,7 +20,7 @@ export default function Home() {
   const [roomName, setRoomName] = useState("");
   const { roomState, roomDispatch } = useContext(RoomContex);
   const rooms = roomState?.room;
-  const {getAllRooms} = UseRoomContext()
+  const { getAllRooms } = UseRoomContext();
 
   // State for managing input value
   const [inputValue, setInputValue] = useState("");
@@ -36,9 +36,9 @@ export default function Home() {
     setInputValue("");
   };
 
-  useEffect(()=>{
-    getAllRooms()
-  },[])
+  useEffect(() => {
+    getAllRooms();
+  }, []);
 
   if (!userData) {
     return (
@@ -72,6 +72,7 @@ export default function Home() {
     );
   }
 
+  console.log({ rooms });
   return (
     <>
       <Container

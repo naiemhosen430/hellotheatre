@@ -29,7 +29,10 @@ export default function UserPage() {
 
   // Handle leaving the room
   const leaveRoom = () => {
-    socket.emit("leave-room", { username: joinedroom?.username });
+    socket.emit("leave-room", {
+      username: joinedroom?.username,
+      user_id: userData?._id,
+    });
   };
 
   useEffect(() => {
