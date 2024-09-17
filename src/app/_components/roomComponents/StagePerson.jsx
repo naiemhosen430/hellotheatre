@@ -5,7 +5,6 @@ import { getApiCall } from "@/api/fatchData";
 
 export default function StagePerson({ id }) {
   const [user, setUser] = useState(null);
-
   useEffect(() => {
     // Define the async function inside useEffect
     const fetchUserData = async () => {
@@ -22,21 +21,20 @@ export default function StagePerson({ id }) {
     fetchUserData();
   }, [id]);
 
-  console.log({ user });
   if (!user) {
     return <div>Loading...</div>; // Optionally handle the loading state
   }
 
   return (
-    <div className="w-[70px] h-[70px] rounded-full border-2 bg-red-900 border-blue-500">
+    <div className="w-[80px] h-[60px] rounded-full ">
       <Image
-        className="object-fit w-[70px] h-[70px] m-auto rounded-full"
+        className="object-fit w-[60px] h-[60px] m-auto rounded-full"
         width={500}
         height={500}
         src={`/${user?.profilephoto}`}
         alt={""}
       />
-      <p className="text-[8px] flex-shrink-0 bg-blue-500 rounded-2xl p-1 px-2 mt-[2px] text-white">
+      <p className="text-[8px] flex-shrink-0 bg-blue-800 rounded-2xl p-1 px-2 mt-[2px] text-white">
         {user?.fullname?.slice(0, 10)}
       </p>
     </div>

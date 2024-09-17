@@ -40,7 +40,6 @@ export default function UseRoomContext() {
     try {
       const response = await getApiCall("user");
       if (response?.statusCode === 200 && response?.data) {
-        console.log(roomDispatch);
         roomDispatch({
           type: "ADD_AllROOM_DATA",
           payload: [...room, ...response?.data],

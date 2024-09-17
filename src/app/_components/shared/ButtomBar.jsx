@@ -49,12 +49,15 @@ export default function BottomBar({ roomName }) {
     });
 
     socket.on("joined-room", (roomData) => {
-      roomDispatch({
-        type: "ADD_JOINEDROOM_DATA",
-        payload: roomData?.roomData || null,
-      });
-      router.push("/meet");
-      setLoading(false);
+      if (roomData?.roomData?._id !== userData?._id){
+
+        roomDispatch({
+          type: "ADD_JOINEDROOM_DATA",
+          payload: roomData?.roomData || null,
+        });
+        router.push("/meet");
+        setLoading(false);
+      }
     });
   }, [socket]);
 

@@ -11,7 +11,6 @@ export default function MyRoom() {
   useEffect(() => {
     // Notify host when a user joins the room
     socket.on("new-user", (data) => {
-      console.log(data);
       roomDispatch({
         type: "ADD_NEWMEMBER",
         payload: data,
@@ -20,12 +19,10 @@ export default function MyRoom() {
     });
 
     socket.on("viewer-left", (data) => {
-      console.log(data);
       roomDispatch({
         type: "REMOVE_NEWMEMBER",
         payload: data,
       });
-      console.log(`User joined: ${data}`);
       // createPeer(userId, true); // Host creates peer connection with viewer
     });
 

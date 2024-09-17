@@ -36,7 +36,6 @@ export default function VideoPlayer() {
       const urlObj = new URL(url);
       // Check if the hostname is YouTube
       if (!["www.youtube.com", "youtu.be"].includes(urlObj.hostname)) {
-        console.log("Invalid URL. Please enter a valid YouTube URL.");
         return;
       }
 
@@ -90,23 +89,11 @@ export default function VideoPlayer() {
     const peers = {};
     // Handle incoming connections
     socket.on("new-user", (id) => {
-      console.log({ useid: id });
       createPeerConnection(id);
     });
 
     // Handle room closure
     socket.on("room-closed", () => {
-      console.log("Room has been closed");
-      roomDispatch({
-        type: "ADD_JOINEDROOM_DATA",
-        payload: null,
-      });
-      router.push("/");
-    });
-
-    // Handle room closure
-    socket.on("viewer-left", () => {
-      console.log("a viewer has left");
       roomDispatch({
         type: "ADD_JOINEDROOM_DATA",
         payload: null,
@@ -185,8 +172,6 @@ export default function VideoPlayer() {
 
     return pc;
   }
-
-  console.log({ room_members });
 
   return (
     <>
@@ -308,11 +293,13 @@ export default function VideoPlayer() {
             People ({joinedroom?.users?.length})
           </h1>
           <div className="p-4 px-2">
-            {room_members?.map((user) => (
-              <div key={user} className="inline-block m-2">
-                <StagePerson id={user?.user_id} />
-              </div>
-            ))}
+            {room_members?.map((user, i) => {
+              return (
+                <div key={i} className="inline-block m-2">
+                  <StagePerson id={user[0]?.user_id} />
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

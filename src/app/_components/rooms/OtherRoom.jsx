@@ -3,22 +3,14 @@ import React, { useContext, useEffect } from "react";
 import { Container } from "react-bootstrap";
 import socket from "@/api/connectIo";
 import { RoomContex } from "@/Contexts/RoomContext";
+import { AuthContex } from "@/Contexts/AuthContex";
 import DisplayHostVideo from "../roomComponents/DisplayHostVideo";
 
 export default function OtherRoom() {
+  const { state } = useContext(AuthContex);
+  const userData = state?.user;
   const { roomState, roomDispatch } = useContext(RoomContex);
   useEffect(() => {
-    // Notify host when a user joins the room
-    socket.on("user-joined", (userId) => {
-      console.log(userId);
-      roomDispatch({
-        type: "ADD_NEWMEMBER",
-        payload: userId,
-      });
-      console.log(`User joined: ${userId}`);
-      // createPeer(userId, true); // Host creates peer connection with viewer
-    });
-
     // // Signal handling for WebRTC connection
     // socket.on("signal", ({ signal, id }) => {
     //   console.log("Received signal from viewer");
@@ -28,6 +20,15 @@ export default function OtherRoom() {
     //   }
     // });
 
+    // Handle other user leave
+    socket.on("viewer-left", (data) => {
+      if (userData?._id !== data?.user_id) {
+        roomDispatch({
+          type: "REMOVE_NEWMEMBER",
+          payload: data,
+        });
+      }
+    });
     return () => {
       socket.off("room-created");
       socket.off("user-joined");

@@ -6,6 +6,7 @@ import { AuthContex } from "@/Contexts/AuthContex";
 import { useRouter } from "next/navigation";
 import { RoomContex } from "@/Contexts/RoomContext";
 import { RxAvatar } from "react-icons/rx";
+import StagePerson from "./StagePerson";
 
 // Configuration for WebRTC
 const configuration = {
@@ -21,7 +22,7 @@ export default function UserPage() {
   const userData = state?.user;
   const router = useRouter();
   const { roomState, roomDispatch } = useContext(RoomContex);
-  const { room, joinedroom } = roomState;
+  const { room, joinedroom, room_members } = roomState;
 
   const togleSettingBox = () => {
     setSettingToggleBox(!settingToggleBox);
@@ -40,11 +41,13 @@ export default function UserPage() {
     const peers = {};
 
     socket.on("you-left", (id) => {
-      roomDispatch({
-        type: "ADD_JOINEDROOM_DATA",
-        payload: null,
-      });
-      router.push("/");
+      if (joinedroom?._id !== userData?._id) {
+        roomDispatch({
+          type: "ADD_JOINEDROOM_DATA",
+          payload: null,
+        });
+        router.push("/");
+      }
     });
 
     // Get local media stream
@@ -88,7 +91,7 @@ export default function UserPage() {
         });
 
         // Handle room closure
-        socket.on("room-closed", () => {
+        socket.on("room-closed-notification", (data) => {
           roomDispatch({
             type: "ADD_JOINEDROOM_DATA",
             payload: null,
@@ -137,8 +140,6 @@ export default function UserPage() {
       return pc;
     }
   }, [router, roomDispatch]);
-
-  console.log(remoteStreams);
   return (
     <>
       {settingToggleBox && (
@@ -216,16 +217,13 @@ export default function UserPage() {
             People ({joinedroom?.users?.length})
           </h1>
           <div className="p-4 px-2">
-            <div className="flex">
-              <div className="flex p-2 text-white justify-center">
-                <RxAvatar className="lg:text-5xl text-4xl" />
-              </div>
-              <div className="p-2">
-                <div className="shadow-2xl lg:text-sm text-[10px] bg-black text-white flex items-center justify-center border-blue-500 p-2 px-3 border rounded-xl">
-                  Hey there, this project is still under construction
+            {room_members?.map((user, i) => {
+              return (
+                <div key={i} className="inline-block m-2">
+                  <StagePerson id={user[0]?.user_id} />
                 </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>

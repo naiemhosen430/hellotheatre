@@ -72,7 +72,6 @@ export default function Home() {
     );
   }
 
-  console.log({ rooms });
   return (
     <>
       <Container

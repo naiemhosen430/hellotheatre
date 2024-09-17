@@ -35,7 +35,6 @@ export default function UseAuthContext() {
       }
       setMessage(response?.message);
     } catch (error) {
-      console.log(error);
       setMessage(error?.message);
       toast.error(
         error.response?.data?.message || "Signup failed. Please try again."
@@ -48,7 +47,6 @@ export default function UseAuthContext() {
   // for updating profile
   const hundleUpdateProfile = async (data) => {
     setLoading(true);
-    console.log({ data });
     try {
       const response = await patchApiCall(`auth/update`, data);
       if (response?.statusCode === 200) {
