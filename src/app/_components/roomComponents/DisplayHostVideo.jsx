@@ -8,14 +8,8 @@ import { RoomContex } from "@/Contexts/RoomContext";
 import { RxAvatar } from "react-icons/rx";
 import StagePerson from "./StagePerson";
 
-// Configuration for WebRTC
-const configuration = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-};
-
 export default function UserPage() {
   const [settingToggleBox, setSettingToggleBox] = useState(false);
-  const [peerConnections, setPeerConnections] = useState({});
   const [remoteStreams, setRemoteStreams] = useState({});
   const localAudioRef = useRef(null);
   const { state } = useContext(AuthContex);
@@ -23,6 +17,9 @@ export default function UserPage() {
   const router = useRouter();
   const { roomState, roomDispatch } = useContext(RoomContex);
   const { room, joinedroom, room_members } = roomState;
+
+  const remoteVideoRef = useRef();
+  const peerConnections = {};
 
   const togleSettingBox = () => {
     setSettingToggleBox(!settingToggleBox);
@@ -37,108 +34,22 @@ export default function UserPage() {
   };
 
   useEffect(() => {
-    const localStream = new MediaStream();
-    const peers = {};
-
-    socket.on("you-left", (id) => {
-      if (joinedroom?._id !== userData?._id) {
-        roomDispatch({
-          type: "ADD_JOINEDROOM_DATA",
-          payload: null,
-        });
-        router.push("/");
-      }
+    socket.on("room-closed-notification", () => {
+      roomDispatch({ type: "ADD_JOINEDROOM_DATA", payload: null });
+      router.push("/");
     });
 
-    // Get local media stream
-    navigator.mediaDevices
-      .getUserMedia({ video: false, audio: true })
-      .then((stream) => {
-        localAudioRef.current.srcObject = stream;
-        localStream.addTrack(stream.getAudioTracks()[0]);
+    socket.on("receive-stream", (userId, stream) => {
+      if (socket.id === userId) return; // Ignore own stream
+      const remoteStream = new MediaStream();
+      stream.getTracks().forEach((track) => remoteStream.addTrack(track));
+      remoteVideoRef.current.srcObject = remoteStream;
+    });
 
-        // Join room
-        socket.emit("join-room", { roomId: "your-room-id", isHost: false });
-
-        // Handle incoming connections
-        socket.on("new-user", (id) => {
-          createPeerConnection(id);
-        });
-
-        // Handle offer
-        socket.on("offer", async ({ id, offer }) => {
-          const pc = createPeerConnection(id);
-          await pc.setRemoteDescription(new RTCSessionDescription(offer));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          socket.emit("answer", { id, answer });
-        });
-
-        // Handle answer
-        socket.on("answer", async ({ id, answer }) => {
-          const pc = peers[id];
-          await pc.setRemoteDescription(new RTCSessionDescription(answer));
-        });
-
-        // Handle ICE candidates
-        socket.on("ice-candidate", async ({ id, candidate }) => {
-          const pc = peers[id];
-          try {
-            await pc.addIceCandidate(new RTCIceCandidate(candidate));
-          } catch (e) {
-            console.error("Error adding received ice candidate", e);
-          }
-        });
-
-        // Handle room closure
-        socket.on("room-closed-notification", (data) => {
-          roomDispatch({
-            type: "ADD_JOINEDROOM_DATA",
-            payload: null,
-          });
-          router.push("/");
-        });
-
-        // Cleanup
-        return () => {
-          Object.values(peers).forEach((pc) => pc.close());
-          socket.off("new-user");
-          socket.off("offer");
-          socket.off("answer");
-          socket.off("ice-candidate");
-          socket.off("room-closed");
-        };
-      })
-      .catch((error) => console.error("Error accessing media devices.", error));
-
-    // Create peer connection
-    function createPeerConnection(id) {
-      const pc = new RTCPeerConnection(configuration);
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit("ice-candidate", { id, candidate: event.candidate });
-        }
-      };
-
-      pc.ontrack = (event) => {
-        setRemoteStreams((prev) => ({
-          ...prev,
-          [id]: URL.createObjectURL(event.streams[0]), // Store object URL for video playback
-        }));
-      };
-
-      localStream
-        .getTracks()
-        .forEach((track) => pc.addTrack(track, localStream));
-
-      setPeerConnections((prev) => ({
-        ...prev,
-        [id]: pc,
-      }));
-
-      return pc;
-    }
+    return () => {
+      socket.off("room-closed-notification");
+      socket.off("receive-stream");
+    };
   }, [router, roomDispatch]);
   return (
     <>
@@ -196,19 +107,7 @@ export default function UserPage() {
           </div>
           <div className="border-2 border-x-sky-950">
             {/* Display the host's video stream */}
-            {remoteStreams["host"] && (
-              <video
-                width="100%"
-                height="500"
-                controls
-                autoPlay
-                muted
-                className="lg:max-h-[400px] max-h-[250px]"
-              >
-                <source src={remoteStreams["host"]} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            )}
+            <video ref={remoteVideoRef} autoPlay style={{ width: "300px" }} />
           </div>
         </div>
 

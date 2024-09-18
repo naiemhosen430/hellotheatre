@@ -14,16 +14,14 @@ const configuration = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
-export default function VideoPlayer() {
+export default function VideoPlayer({ localVideoRef }) {
   const [videoId, setVideoId] = useState("TlC_NCowUuQ"); // Default YouTube video ID
   const [videoUrl, setVideoUrl] = useState(null); // For local video playback
   const [errorData, setErrorData] = useState("");
   const [settingToggleBox, setSettingToggleBox] = useState(false);
-  const [peerConnections, setPeerConnections] = useState({});
   const [remoteStreams, setRemoteStreams] = useState({});
   const inputRef = useRef(null);
   const fileInputRef = useRef(null); // Ref for the hidden file input
-  const localVideoRef = useRef(null); // Ref for the local video playback
   const { state } = useContext(AuthContex);
   const userData = state?.user;
   const router = useRouter();
@@ -84,14 +82,6 @@ export default function VideoPlayer() {
 
   // Set up WebRTC peer connections
   useEffect(() => {
-    const localStreamdata = new MediaStream();
-    set_localStream(localStreamdata);
-    const peers = {};
-    // Handle incoming connections
-    socket.on("new-user", (id) => {
-      createPeerConnection(id);
-    });
-
     // Handle room closure
     socket.on("room-closed", () => {
       roomDispatch({
@@ -101,80 +91,22 @@ export default function VideoPlayer() {
       router.push("/");
     });
 
-    // Get local media stream
-    navigator.mediaDevices
-      .getUserMedia({ video: false, audio: true })
-      .then((stream) => {
-        // localVideoRef.current.srcObject = stream;
-        localStream.addTrack(stream.getAudioTracks()[0]);
-
-        // Handle offer
-        socket.on("offer", async ({ id, offer }) => {
-          const pc = createPeerConnection(id);
-          await pc.setRemoteDescription(new RTCSessionDescription(offer));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          socket.emit("answer", { id, answer });
+    
+    if (joinedroom?._id === userData?._id){
+      
+      navigator.mediaDevices
+        .getUserMedia({ video: true, audio: true })
+        .then((stream) => {
+          localVideoRef.current.srcObject = stream;
+          socket.emit("send-stream", room, stream);
         });
+    }
 
-        // Handle answer
-        socket.on("answer", async ({ id, answer }) => {
-          const pc = peers[id];
-          await pc.setRemoteDescription(new RTCSessionDescription(answer));
-        });
-
-        // Handle ICE candidates
-        socket.on("ice-candidate", async ({ id, candidate }) => {
-          const pc = peers[id];
-          try {
-            await pc.addIceCandidate(new RTCIceCandidate(candidate));
-          } catch (e) {
-            console.error("Error adding received ice candidate", e);
-          }
-        });
-
-        // Cleanup
-        return () => {
-          Object.values(peers).forEach((pc) => pc.close());
-          socket.off("new-user");
-          socket.off("offer");
-          socket.off("answer");
-          socket.off("ice-candidate");
-          socket.off("room-closed");
-        };
-      })
-      .catch((error) => console.error("Error accessing media devices.", error));
   }, [router, roomDispatch, room?.id]);
-
-  // Create peer connection
-  function createPeerConnection(id) {
-    const pc = new RTCPeerConnection(configuration);
-
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("ice-candidate", { id, candidate: event.candidate });
-      }
-    };
-
-    pc.ontrack = (event) => {
-      setRemoteStreams((prev) => ({
-        ...prev,
-        [id]: event.streams[0],
-      }));
-    };
-
-    // localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
-
-    setPeerConnections((prev) => ({
-      ...prev,
-      [id]: pc,
-    }));
-
-    return pc;
-  }
 
   return (
     <>
+      <video className="hidden" ref={localVideoRef} autoPlay muted style={{ width: "300px" }} />
       {settingToggleBox && (
         <div className="fixed z-[500] top-0 right-0 h-screen w-screen bg-black/50 flex justify-end">
           <div className="lg:w-3/12 w-8/12 h-screen bg-slate-950 shadow-lg">

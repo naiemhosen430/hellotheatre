@@ -1,13 +1,18 @@
 "use client";
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import VideoPlayer from "../roomComponents/VideoPlayer";
 import { Container } from "react-bootstrap";
 import socket from "@/api/connectIo";
 import { RoomContex } from "@/Contexts/RoomContext";
 import Stage from "../roomComponents/Stage";
+import { createPeerConnection } from "@/utils/createPeerConnection";
 
 export default function MyRoom() {
   const { roomState, roomDispatch } = useContext(RoomContex);
+
+  const localVideoRef = useRef();
+  const remoteVideoRef = useRef();
+  const peerConnections = {};
   useEffect(() => {
     // Notify host when a user joins the room
     socket.on("new-user", (data) => {
@@ -15,7 +20,13 @@ export default function MyRoom() {
         type: "ADD_NEWMEMBER",
         payload: data,
       });
-      // createPeer(userId, true); // Host creates peer connection with viewer
+      createPeerConnection(
+        data?.socket_id,
+        peerConnections,
+        remoteVideoRef,
+        localVideoRef,
+        socket
+      );
     });
 
     socket.on("viewer-left", (data) => {
@@ -23,17 +34,11 @@ export default function MyRoom() {
         type: "REMOVE_NEWMEMBER",
         payload: data,
       });
-      // createPeer(userId, true); // Host creates peer connection with viewer
+      if (peerConnections[data?.socket_id]) {
+        peerConnections[data?.socket_id].close();
+        delete peerConnections[data?.socket_id];
+      }
     });
-
-    // // Signal handling for WebRTC connection
-    // socket.on("signal", ({ signal, id }) => {
-    //   console.log("Received signal from viewer");
-    //   const peer = peersRef.current[id];
-    //   if (peer) {
-    //     peer.signal(signal);
-    //   }
-    // });
 
     return () => {
       socket.off("room-created");
@@ -43,9 +48,10 @@ export default function MyRoom() {
   }, []);
   return (
     <>
+      <video className="hidden" ref={remoteVideoRef} autoPlay style={{ width: "300px" }} />
       <Container className="  bg-black  h-screen px-0">
         <div>
-          <VideoPlayer />
+          <VideoPlayer localVideoRef={localVideoRef} />
         </div>
         <div>
           <Stage />
