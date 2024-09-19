@@ -1,10 +1,12 @@
 "use client";
-import React, { useContext } from "react";
 import MyRoom from "../_components/rooms/MyRoom";
 import OtherRoom from "../_components/rooms/OtherRoom";
 import { AuthContex } from "@/Contexts/AuthContex";
 import { RoomContex } from "@/Contexts/RoomContext";
 import { useRouter } from "next/navigation";
+import React, { useContext, useEffect, useState, useRef } from "react";
+import { Container } from "react-bootstrap";
+import socket from "@/api/connectIo";
 
 export default function page() {
   const { state } = useContext(AuthContex);
@@ -12,80 +14,97 @@ export default function page() {
   const { roomState, roomDispatch } = useContext(RoomContex);
   const { room, joinedroom } = roomState;
   const router = useRouter();
+  const localAudioRef = useRef();
+  const remoteAudioRef = useRef();
+  const [localStream, setLocalStream] = useState(null);
+  const peerConnections = useRef({});
 
   if (!userData || !joinedroom) {
     router.push("/", { scroll: true });
   }
 
+  useEffect(() => {
+    startLocalStream();
+    socket.on("new-user", handleNewUser);
+    socket.on("viewer-left", handleViewerLeft);
+    socket.on("you-left", handleYouLeft);
 
-  // // Host starts sharing the screen
-  // const startSharing = async () => {
-  //   try {
-  //     const displayStream = await navigator.mediaDevices.getDisplayMedia({
-  //       video: true,
-  //       audio: true,
-  //     });
-  //     setStream(displayStream);
+    socket.on("signal", async ({ from, signal }) => {
+      console.log({ from, signal });
+      if (signal.type === "offer") {
+        // Create an answer
+        const pc = new RTCPeerConnection();
+        peerConnections.current[from] = pc;
 
-  //     displayStream.getTracks().forEach((track) => {
-  //       Object.values(peersRef.current).forEach((peer) =>
-  //         peer.addTrack(track, displayStream)
-  //       );
-  //     });
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            socket.emit("signal", {
+              to: joinedroom?.username,
+              signal: event.candidate,
+            });
+          }
+        };
 
-  //     const video = document.createElement("video");
-  //     video.srcObject = displayStream;
-  //     video.muted = true;
-  //     video.play();
-  //     document.body.appendChild(video);
-  //   } catch (err) {
-  //     console.error("Error starting display sharing: ", err);
-  //   }
-  // };
+        pc.ontrack = (event) => {
+          // Add the remote stream to the video/audio element
+          const remoteAudio = document.getElementById("remoteAudio");
+          remoteAudio.srcObject = event.streams[0];
+        };
 
-  // const createPeer = (userId, initiator = false) => {
-  //   const peer = new SimplePeer({
-  //     initiator,
-  //     trickle: false,
-  //     stream: initiator ? stream : null, // Send stream if host
-  //   });
+        await pc.setRemoteDescription(new RTCSessionDescription(signal));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.emit("signal", { to: joinedroom?.username, signal: answer });
+      } else if (signal.type === "answer") {
+        await peerConnections.current[from].setRemoteDescription(
+          new RTCSessionDescription(signal)
+        );
+      } else if (signal.candidate) {
+        await peerConnections.current[from].addIceCandidate(
+          new RTCIceCandidate(signal)
+        );
+      }
+    });
 
-  //   peer.on("signal", (signal) => {
-  //     socket.emit("signal", {
-  //       signal,
-  //       username: userData?.username,
-  //       id: userId,
-  //     });
-  //   });
+    return () => {
+      socket.off("new-user", handleNewUser);
+      socket.off("viewer-left", handleViewerLeft);
+      socket.off("you-left", handleYouLeft);
+    };
+  }, [room, userData, roomDispatch, router]);
 
-  //   peersRef.current[userId] = peer;
-  // };
+  const handleNewUser = (data) => {
+    roomDispatch({ type: "ADD_NEWMEMBER", payload: data });
+  };
 
-  // const usercreatePeer = (userId) => {
-  //   const peer = new SimplePeer({
-  //     initiator: false, // Viewer is not the initiator
-  //     trickle: false,
-  //   });
+  const handleYouLeft = (id) => {
+    if (joinedroom?._id !== userData?._id) {
+      roomDispatch({ type: "ADD_JOINEDROOM_DATA", payload: null });
+      router.push("/");
+    }
+  };
 
-  //   peer.on("signal", (signal) => {
-  //     socket.emit("signal", { signal, username: roomUserName, id: userId });
-  //   });
+  const handleViewerLeft = (data) => {
+    if (userData?._id !== data?.user_id) {
+      roomDispatch({ type: "REMOVE_NEWMEMBER", payload: data });
+    }
+  };
 
-  //   peer.on("stream", (remoteStream) => {
-  //     const remoteVideo = document.getElementById("remoteVideo");
-  //     remoteVideo.srcObject = remoteStream;
-  //     remoteVideo.play();
-  //   });
+  const startLocalStream = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    setLocalStream(stream);
 
-  //   peersRef.current[userId] = peer;
-  // };
+    stream.getTracks().forEach((track) => {
+      // Broadcasting to all peers
+      socket.emit("signal", { to: joinedroom?.username, signal: track });
+    });
+  };
 
-  // socket.on("signal", ({ signal, id }) => {
-  //   const peer = peersRef.current[id];
-  //   if (peer) {
-  //     peer.signal(signal);
-  //   }
-  // });
-
-  return <>{userData?._id === joinedroom?._id ? <MyRoom /> : <OtherRoom />}</>;
+  return (
+    <>
+      <audio id="remoteAudio" autoPlay></audio>
+      {localStream && <audio autoPlay muted srcObject={localStream}></audio>}
+      {userData?._id === joinedroom?._id ? <MyRoom /> : <OtherRoom />}
+    </>
+  );
 }

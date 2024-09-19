@@ -9,10 +9,7 @@ import { useRouter } from "next/navigation";
 import { RoomContex } from "@/Contexts/RoomContext";
 import StagePerson from "./StagePerson";
 
-// Configuration for WebRTC
-const configuration = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-};
+
 
 export default function VideoPlayer({ localVideoRef }) {
   const [videoId, setVideoId] = useState("TlC_NCowUuQ"); // Default YouTube video ID
