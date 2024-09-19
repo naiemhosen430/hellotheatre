@@ -7,50 +7,50 @@ import { RoomContex } from "@/Contexts/RoomContext";
 import Stage from "../roomComponents/Stage";
 
 export default function MyRoom() {
-  const { roomState, roomDispatch } = useContext(RoomContex);
+  const { roomDispatch } = useContext(RoomContex);
 
   const localAudioRef = useRef();
   const remoteAudioRef = useRef();
-  const peerConnections = useRef({}); // Use useRef to store peer connections
+  const peerConnections = useRef({}); // Store peer connections
+
+  useEffect(() => {
+    const getLocalStream = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        localAudioRef.current.srcObject = stream;
+      } catch (error) {
+        console.error("Error accessing media devices.", error);
+      }
+    };
+
+    getLocalStream();
+  }, []);
 
   useEffect(() => {
     // Notify host when a user joins the room
     socket.on("new-user", (data) => {
-      roomDispatch({
-        type: "ADD_NEWMEMBER",
-        payload: data,
-      });
-      createPeerConnection(data?.socket_id);
+      roomDispatch({ type: "ADD_NEWMEMBER", payload: data });
+      createPeerConnection(data.socket_id);
     });
 
     socket.on("viewer-left", (data) => {
-      roomDispatch({
-        type: "REMOVE_NEWMEMBER",
-        payload: data,
-      });
-      if (peerConnections.current[data?.socket_id]) {
-        peerConnections.current[data?.socket_id].close();
-        delete peerConnections.current[data?.socket_id];
+      roomDispatch({ type: "REMOVE_NEWMEMBER", payload: data });
+      if (peerConnections.current[data.socket_id]) {
+        peerConnections.current[data.socket_id].close();
+        delete peerConnections.current[data.socket_id];
       }
     });
 
     socket.on("receive-audio-stream", (userId, stream) => {
-      // Handle receiving an audio stream from another user
       const remoteAudio = remoteAudioRef.current;
       remoteAudio.srcObject = stream; // Set the received stream to the audio element
     });
 
-    socket.on("receive-offer", (userId, offer) => {
-      handleOffer(userId, offer);
-    });
-
-    socket.on("receive-answer", (userId, answer) => {
-      handleAnswer(userId, answer);
-    });
-
-    socket.on("receive-candidate", (userId, candidate) => {
-      handleCandidate(userId, candidate);
-    });
+    socket.on("receive-offer", handleOffer);
+    socket.on("receive-answer", handleAnswer);
+    socket.on("receive-candidate", handleCandidate);
 
     return () => {
       socket.off("new-user");
@@ -69,11 +69,14 @@ export default function MyRoom() {
 
     peerConnections.current[userId] = peerConnection;
 
-    // Add local audio track to the peer connection
     const localStream = localAudioRef.current.srcObject;
-    localStream.getTracks().forEach((track) => {
-      peerConnection.addTrack(track, localStream);
-    });
+    if (localStream) {
+      localStream.getTracks().forEach((track) => {
+        peerConnection.addTrack(track, localStream);
+      });
+    } else {
+      console.error("Local stream is not available.");
+    }
 
     peerConnection
       .createOffer()
@@ -90,7 +93,6 @@ export default function MyRoom() {
       }
     };
 
-    // When remote audio track is received
     peerConnection.ontrack = (event) => {
       const remoteAudio = remoteAudioRef.current;
       remoteAudio.srcObject = event.streams[0]; // Set the received audio stream
@@ -106,11 +108,14 @@ export default function MyRoom() {
 
     peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
 
-    // Add local audio track to the peer connection
     const localStream = localAudioRef.current.srcObject;
-    localStream.getTracks().forEach((track) => {
-      peerConnection.addTrack(track, localStream);
-    });
+    if (localStream) {
+      localStream.getTracks().forEach((track) => {
+        peerConnection.addTrack(track, localStream);
+      });
+    } else {
+      console.error("Local stream is not available.");
+    }
 
     peerConnection
       .createAnswer()
@@ -153,7 +158,7 @@ export default function MyRoom() {
         ref={remoteAudioRef}
         autoPlay
         controls
-        style={{ display: "none" }} // Hide remote audio element
+        style={{ display: "none" }}
       />
       <Container className="bg-black h-screen px-0">
         <div>

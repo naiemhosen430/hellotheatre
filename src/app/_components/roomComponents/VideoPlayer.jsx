@@ -91,22 +91,25 @@ export default function VideoPlayer({ localVideoRef }) {
       router.push("/");
     });
 
-    
-    if (joinedroom?._id === userData?._id){
-      
+    if (joinedroom?._id === userData?._id) {
       navigator.mediaDevices
         .getUserMedia({ video: true, audio: true })
         .then((stream) => {
-          localVideoRef.current.srcObject = stream;
+          // localVideoRef.current.srcObject = stream;
           socket.emit("send-stream", room, stream);
         });
     }
-
   }, [router, roomDispatch, room?.id]);
 
   return (
     <>
-      <video className="hidden" ref={localVideoRef} autoPlay muted style={{ width: "300px" }} />
+      <video
+        className="hidden"
+        ref={localVideoRef}
+        autoPlay
+        muted
+        style={{ width: "300px" }}
+      />
       {settingToggleBox && (
         <div className="fixed z-[500] top-0 right-0 h-screen w-screen bg-black/50 flex justify-end">
           <div className="lg:w-3/12 w-8/12 h-screen bg-slate-950 shadow-lg">

@@ -19,62 +19,55 @@ export default function OtherRoom() {
   const peerConnections = useRef({});
 
   useEffect(() => {
-    // Get local audio stream
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then((stream) => {
+    const getLocalStream = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
         localAudioRef.current.srcObject = stream; // Set local audio stream
-        // Start connection to host
-        socket.emit("join-room", room._id); // Emit join room event (or your specific event)
-      })
-      .catch((error) => {
-        console.error("Error accessing audio devices.", error);
-      });
-
-    // Handle user join and signaling for audio
-    socket.on("new-user", (data) => {
-      createPeerConnection(data.socket_id);
-    });
-
-    socket.on("receive-offer", (userId, offer) => {
-      handleOffer(userId, offer);
-    });
-
-    socket.on("receive-answer", (userId, answer) => {
-      handleAnswer(userId, answer);
-    });
-
-    socket.on("receive-candidate", (userId, candidate) => {
-      handleCandidate(userId, candidate);
-    });
-
-    // Handle other user leave
-    socket.on("viewer-left", (data) => {
-      if (userData?._id !== data?.user_id) {
-        roomDispatch({
-          type: "REMOVE_NEWMEMBER",
-          payload: data,
-        });
+        socket.emit("join-room", room._id); // Emit join room event
+      } catch (error) {
+        console.error("Error accessing audio devices:", error);
+        alert(
+          "Unable to access audio devices. Please check your microphone settings."
+        );
       }
-    });
+    };
 
-    socket.on("you-left", (id) => {
+    getLocalStream();
+
+    // Handle signaling for audio
+    const handleNewUser = (data) => {
+      createPeerConnection(data.socket_id);
+    };
+
+    const handleViewerLeft = (data) => {
+      if (userData?._id !== data?.user_id) {
+        roomDispatch({ type: "REMOVE_NEWMEMBER", payload: data });
+      }
+    };
+
+    const handleYouLeft = (id) => {
       if (joinedroom?._id !== userData?._id) {
-        roomDispatch({
-          type: "ADD_JOINEDROOM_DATA",
-          payload: null,
-        });
+        roomDispatch({ type: "ADD_JOINEDROOM_DATA", payload: null });
         router.push("/");
       }
-    });
+    };
+
+    socket.on("new-user", handleNewUser);
+    socket.on("receive-offer", handleOffer);
+    socket.on("receive-answer", handleAnswer);
+    socket.on("receive-candidate", handleCandidate);
+    socket.on("viewer-left", handleViewerLeft);
+    socket.on("you-left", handleYouLeft);
 
     return () => {
-      socket.off("new-user");
-      socket.off("receive-offer");
-      socket.off("receive-answer");
-      socket.off("receive-candidate");
-      socket.off("viewer-left");
-      socket.off("you-left");
+      socket.off("new-user", handleNewUser);
+      socket.off("receive-offer", handleOffer);
+      socket.off("receive-answer", handleAnswer);
+      socket.off("receive-candidate", handleCandidate);
+      socket.off("viewer-left", handleViewerLeft);
+      socket.off("you-left", handleYouLeft);
     };
   }, [room, userData, roomDispatch, router]);
 
@@ -85,11 +78,14 @@ export default function OtherRoom() {
 
     peerConnections.current[userId] = peerConnection;
 
-    // Add local audio track to the peer connection
     const localStream = localAudioRef.current.srcObject;
-    localStream.getTracks().forEach((track) => {
-      peerConnection.addTrack(track, localStream);
-    });
+    if (localStream) {
+      localStream.getTracks().forEach((track) => {
+        peerConnection.addTrack(track, localStream);
+      });
+    } else {
+      console.error("Local audio stream not available.");
+    }
 
     peerConnection
       .createOffer()
@@ -98,6 +94,9 @@ export default function OtherRoom() {
       })
       .then(() => {
         socket.emit("send-offer", userId, peerConnection.localDescription);
+      })
+      .catch((error) => {
+        console.error("Error creating offer:", error);
       });
 
     peerConnection.onicecandidate = (event) => {
@@ -106,7 +105,6 @@ export default function OtherRoom() {
       }
     };
 
-    // When remote audio track is received
     peerConnection.ontrack = (event) => {
       const remoteAudio = remoteAudioRef.current;
       remoteAudio.srcObject = event.streams[0]; // Set the received audio stream
@@ -120,21 +118,28 @@ export default function OtherRoom() {
 
     peerConnections.current[userId] = peerConnection;
 
-    peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-
-    // Add local audio track to the peer connection
-    const localStream = localAudioRef.current.srcObject;
-    localStream.getTracks().forEach((track) => {
-      peerConnection.addTrack(track, localStream);
-    });
-
     peerConnection
-      .createAnswer()
+      .setRemoteDescription(new RTCSessionDescription(offer))
+      .then(() => {
+        const localStream = localAudioRef.current.srcObject;
+        if (localStream) {
+          localStream.getTracks().forEach((track) => {
+            peerConnection.addTrack(track, localStream);
+          });
+        } else {
+          console.error("Local audio stream not available.");
+        }
+
+        return peerConnection.createAnswer();
+      })
       .then((answer) => {
         return peerConnection.setLocalDescription(answer);
       })
       .then(() => {
         socket.emit("send-answer", userId, peerConnection.localDescription);
+      })
+      .catch((error) => {
+        console.error("Error handling offer:", error);
       });
 
     peerConnection.onicecandidate = (event) => {
@@ -152,14 +157,22 @@ export default function OtherRoom() {
   const handleAnswer = (userId, answer) => {
     const peerConnection = peerConnections.current[userId];
     if (peerConnection) {
-      peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+      peerConnection
+        .setRemoteDescription(new RTCSessionDescription(answer))
+        .catch((error) => {
+          console.error("Error setting remote description for answer:", error);
+        });
     }
   };
 
   const handleCandidate = (userId, candidate) => {
     const peerConnection = peerConnections.current[userId];
     if (peerConnection) {
-      peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      peerConnection
+        .addIceCandidate(new RTCIceCandidate(candidate))
+        .catch((error) => {
+          console.error("Error adding ICE candidate:", error);
+        });
     }
   };
 
