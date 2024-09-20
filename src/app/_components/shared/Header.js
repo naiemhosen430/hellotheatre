@@ -18,7 +18,7 @@ export default function Header() {
           </div>
           <div>
             <Link href={"/profile"}>
-              <div className="h-[50px] w-[50px] bg-white rounded-full flex items-center justify-center font-bold text-black text-[14px]">
+              <div className="h-[45px] w-[45px] bg-white rounded-full flex items-center justify-center font-bold text-black text-[14px]">
                 {userData?.fullname?.slice(0, 5)}
               </div>
             </Link>
