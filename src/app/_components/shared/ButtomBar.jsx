@@ -6,6 +6,13 @@ import UseRoomContext from "@/Hooks/UseRoomContext";
 import { RoomContex } from "@/Contexts/RoomContext";
 import { useRouter } from "next/navigation";
 import socket from "@/api/connectIo";
+import Link from "next/link";
+
+import { IoMdHome } from "react-icons/io";
+import { GiTheater } from "react-icons/gi";
+import { TiMessages } from "react-icons/ti";
+import { RxAvatar } from "react-icons/rx";
+import { MdFeed } from "react-icons/md";
 
 export default function BottomBar({ roomName }) {
   const { state } = useContext(AuthContex);
@@ -49,8 +56,7 @@ export default function BottomBar({ roomName }) {
     });
 
     socket.on("joined-room", (roomData) => {
-      if (roomData?.roomData?._id !== userData?._id){
-
+      if (roomData?.roomData?._id !== userData?._id) {
         roomDispatch({
           type: "ADD_JOINEDROOM_DATA",
           payload: roomData?.roomData || null,
@@ -64,7 +70,7 @@ export default function BottomBar({ roomName }) {
   return (
     <>
       <Container>
-        {joinState && (
+        {/* {joinState && (
           <div className="fixed h-screen w-screen flex p-5 items-center justify-center z-50 top-0 left-0 bg-black">
             <div className="text-white text-lg mb-4">
               {statusMessage && <p>{statusMessage}</p>}
@@ -121,7 +127,32 @@ export default function BottomBar({ roomName }) {
               </div>
             </Container>
           </div>
-        )}
+        )} */}
+
+        <div className="fixed bottom-0 left-0 w-full">
+          <Container className="bg-black p-2 flex items-center justify-around">
+            <Link className="inline-block text-center p-1" href={"/"}>
+              <IoMdHome className="inline-block text-[20px] text-white" />
+              <p className="text-white text-[10px] text-center">Home</p>
+            </Link>
+            <Link className="inline-block text-center p-1" href={"/theatres"}>
+              <GiTheater className="inline-block text-[20px] text-white" />
+              <p className="text-white text-[10px] text-center">Theatre</p>
+            </Link>
+            <Link className="inline-block text-center p-1" href={"/feed"}>
+              <MdFeed className="inline-block text-[20px] text-white" />
+              <p className="text-white text-[10px] text-center">Feed</p>
+            </Link>
+            <Link className="inline-block text-center p-1" href={"/message"}>
+              <TiMessages className="inline-block text-[20px] text-white" />
+              <p className="text-white text-[10px] text-center">Messages</p>
+            </Link>
+            <Link className="inline-block text-center p-1" href={"/profile"}>
+              <RxAvatar className="inline-block text-[20px] text-white" />
+              <p className="text-white text-[10px] text-center">Profile</p>
+            </Link>
+          </Container>
+        </div>
       </Container>
     </>
   );
