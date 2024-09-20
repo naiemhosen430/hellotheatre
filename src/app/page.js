@@ -90,7 +90,7 @@ export default function Home() {
 
   return (
     <>
-      <Container className=" p-0 min-h-screen rounded-t-[20px] bg-gradient-to-t from-[#46007C] to-[#8000E2] overflow-y-auto">
+      <Container className=" p-0 min-h-screen rounded-t-[20px] bg-gradient-to-t from-[#46007C] to-[#8000E2] w-full overflow-hidden overflow-y-auto">
         <div className="flex items-center">
           <input
             className="text-[14px] leading-[17.07px] w-full p-[18px] px-[18px] placeholder-white text-white font-[400] bg-[#6700B6] rounded-[20px]"

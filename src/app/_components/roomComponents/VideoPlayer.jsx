@@ -141,9 +141,7 @@ export default function VideoPlayer({ localVideoRef }) {
                 <h1 className="text-lg leading-[10px] lg:text-xl">
                   Hello Theatre
                 </h1>
-                <p className="text-[5px] m-0 leading-[10px] text-blue-500">
-                  Produced by NanAi
-                </p>
+    
               </div>
               <div className="px-4">
                 <h1 className="leading-[10px] text-sm lg:text-xl text-white font-bold">
