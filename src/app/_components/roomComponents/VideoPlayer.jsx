@@ -107,8 +107,8 @@ export default function VideoPlayer({ localVideoRef }) {
         style={{ width: "300px" }}
       />
       {settingToggleBox && (
-        <div className="fixed z-[500] top-0 right-0 h-screen w-screen bg-black/50 flex justify-end">
-          <div className="lg:w-3/12 w-8/12 h-screen bg-slate-950 shadow-lg">
+        <div className="fixed z-[500] top-0 right-0  w-screen bg-black/50 flex justify-end">
+          <div className="lg:w-3/12 w-8/12  bg-slate-950 shadow-lg">
             <h1 className="p-2 border-b-2 lg:p-5 text-white font-bold text-2xl lg:text-4xl">
               Room Setting
             </h1>

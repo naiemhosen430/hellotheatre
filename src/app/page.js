@@ -80,7 +80,7 @@ export default function Home() {
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
-        className="p-4 px-2 min-h-screen overflow-y-auto"
+        className="p-4 px-2  overflow-y-auto"
       >
         <div>
           <span className="p-2 w-6/12 text-white lg:text-2xl font-bold text-lg">
