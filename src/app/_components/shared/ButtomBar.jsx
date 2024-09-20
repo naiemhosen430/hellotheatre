@@ -6,6 +6,7 @@ import UseRoomContext from "@/Hooks/UseRoomContext";
 import { RoomContex } from "@/Contexts/RoomContext";
 import { useRouter } from "next/navigation";
 import socket from "@/api/connectIo";
+import { FaPlus } from "react-icons/fa";
 import Link from "next/link";
 
 import { IoMdHome } from "react-icons/io";
@@ -148,9 +149,9 @@ export default function BottomBar({ roomName }) {
                 <TiMessages className="inline-block text-[20px] text-white" />
                 <p className="text-white text-[10px] text-center">Messages</p>
               </Link>
-              <Link className="inline-block text-center p-1" href={"/profile"}>
-                <RxAvatar className="inline-block text-[20px] text-white" />
-                <p className="text-white text-[10px] text-center">Profile</p>
+              <Link    onClick={createRoom} className="inline-block text-center p-1" href={""}>
+                <FaPlus className="inline-block text-[20px] text-white" />
+                <p className="text-white text-[10px] text-center">Create</p>
               </Link>
             </Container>
           </div>
