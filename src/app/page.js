@@ -102,7 +102,7 @@ export default function Home() {
           <IoSearch className="ml-[-40px] inline-block text-2xl text-white" />
         </div>
 
-        <div classname="p-2">
+        <div classname="p-2 w-full overflow-hidden">
           {!search_text && (
             <>
               <span className="p-2 w-6/12 text-white lg:text-2xl font-bold text-lg">
