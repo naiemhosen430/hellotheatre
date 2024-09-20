@@ -102,7 +102,7 @@ export default function page() {
 
   return (
     <>
-    <div className="fixed top-0 left-0 w-full min-h-screen">
+    <div className="fixed top-0 z-[1000] left-0 w-full min-h-screen">
 
     <audio id="remoteAudio" autoPlay></audio>
     {localStream && <audio autoPlay muted srcObject={localStream}></audio>}
