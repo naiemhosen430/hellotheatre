@@ -1,8 +1,8 @@
 "use client";
 import { useContext, useState, useEffect } from "react";
 import { RoomContex } from "@/Contexts/RoomContext";
-import TheatreCart from "./_components/roomComponents/TheatreCart";
-import RoomLoaderCart from "./_components/loaders/RoomLoaderCart";
+import TheatreCart from "../_components/roomComponents/TheatreCart";
+import RoomLoaderCart from "../_components/loaders/RoomLoaderCart";
 
 export default function page() {
   const { roomState, roomDispatch } = useContext(RoomContex);

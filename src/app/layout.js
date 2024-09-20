@@ -5,6 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Container } from "react-bootstrap";
 import AuthContexProvider from "@/Contexts/AuthContex";
 import RoomContexProvider from "@/Contexts/RoomContext";
+import ButtomBar from "./_components/shared/ButtomBar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,7 +26,10 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <AuthContexProvider>
           <RoomContexProvider>
-            <div className="bg-[#1E201E] min-h-screen">{children}</div>
+            <div className="bg-[#1E201E] min-h-screen">
+              {children}
+              <ButtomBar />
+            </div>
           </RoomContexProvider>
         </AuthContexProvider>
       </body>
