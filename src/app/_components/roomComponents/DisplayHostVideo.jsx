@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { RoomContex } from "@/Contexts/RoomContext";
 import { RxAvatar } from "react-icons/rx";
 import StagePerson from "./StagePerson";
+import MessageBox from "./MessageBox";
 
 export default function UserPage() {
   const [settingToggleBox, setSettingToggleBox] = useState(false);
@@ -112,9 +113,6 @@ export default function UserPage() {
         </div>
 
         <div className="w-12/12 lg:w-4/12">
-          <h1 className="p-2 text-slate-400 bg-slate-800 text-xl lg:text-sm">
-            People ({joinedroom?.users?.length})
-          </h1>
           <div className="p-4 px-2">
             {room_members?.map((user, i) => {
               return (
@@ -124,6 +122,11 @@ export default function UserPage() {
               );
             })}
           </div>
+          <h1 className="p-2 text-slate-400 bg-slate-800 text-xl lg:text-sm">
+            People ({joinedroom?.users?.length})
+          </h1>
+
+          <MessageBox />
         </div>
       </div>
 
