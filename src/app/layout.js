@@ -6,6 +6,9 @@ import { Container } from "react-bootstrap";
 import AuthContexProvider from "@/Contexts/AuthContex";
 import RoomContexProvider from "@/Contexts/RoomContext";
 import ButtomBar from "./_components/shared/ButtomBar";
+import Header from "./_components/shared/Header";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,7 +29,8 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <AuthContexProvider>
           <RoomContexProvider>
-            <div className="bg-[#1E201E] min-h-screen">
+            <div className="bg-[#46007C] min-h-screen">
+              <Header />
               {children}
               <ButtomBar />
             </div>

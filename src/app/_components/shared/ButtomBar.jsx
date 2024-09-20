@@ -129,30 +129,32 @@ export default function BottomBar({ roomName }) {
           </div>
         )} */}
 
-        <div className="fixed bottom-0 left-0 w-full">
-          <Container className="bg-black p-2 flex items-center justify-around">
-            <Link className="inline-block text-center p-1" href={"/"}>
-              <IoMdHome className="inline-block text-[20px] text-white" />
-              <p className="text-white text-[10px] text-center">Home</p>
-            </Link>
-            <Link className="inline-block text-center p-1" href={"/theatres"}>
-              <GiTheater className="inline-block text-[20px] text-white" />
-              <p className="text-white text-[10px] text-center">Theatre</p>
-            </Link>
-            <Link className="inline-block text-center p-1" href={"/feed"}>
-              <MdFeed className="inline-block text-[20px] text-white" />
-              <p className="text-white text-[10px] text-center">Feed</p>
-            </Link>
-            <Link className="inline-block text-center p-1" href={"/message"}>
-              <TiMessages className="inline-block text-[20px] text-white" />
-              <p className="text-white text-[10px] text-center">Messages</p>
-            </Link>
-            <Link className="inline-block text-center p-1" href={"/profile"}>
-              <RxAvatar className="inline-block text-[20px] text-white" />
-              <p className="text-white text-[10px] text-center">Profile</p>
-            </Link>
-          </Container>
-        </div>
+        {userData && (
+          <div className="fixed bottom-0 left-0 w-full">
+            <Container className="bg-black p-2 flex items-center justify-around">
+              <Link className="inline-block text-center p-1" href={"/"}>
+                <IoMdHome className="inline-block text-[20px] text-white" />
+                <p className="text-white text-[10px] text-center">Home</p>
+              </Link>
+              <Link className="inline-block text-center p-1" href={"/theatres"}>
+                <GiTheater className="inline-block text-[20px] text-white" />
+                <p className="text-white text-[10px] text-center">Theatre</p>
+              </Link>
+              <Link className="inline-block text-center p-1" href={"/feed"}>
+                <MdFeed className="inline-block text-[20px] text-white" />
+                <p className="text-white text-[10px] text-center">Feed</p>
+              </Link>
+              <Link className="inline-block text-center p-1" href={"/message"}>
+                <TiMessages className="inline-block text-[20px] text-white" />
+                <p className="text-white text-[10px] text-center">Messages</p>
+              </Link>
+              <Link className="inline-block text-center p-1" href={"/profile"}>
+                <RxAvatar className="inline-block text-[20px] text-white" />
+                <p className="text-white text-[10px] text-center">Profile</p>
+              </Link>
+            </Container>
+          </div>
+        )}
       </Container>
     </>
   );

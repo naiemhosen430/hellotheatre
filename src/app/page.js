@@ -10,6 +10,9 @@ import { Container } from "react-bootstrap";
 import RoomLoaderCart from "./_components/loaders/RoomLoaderCart";
 import { TbMoodSad } from "react-icons/tb";
 import UseRoomContext from "@/Hooks/UseRoomContext";
+import { IoSearch } from "react-icons/io5";
+import CetagorySlider from "./_components/sliders/CetagorySlider.jsx";
+import TheatreSlider from "./_components/sliders/TheatreSlider";
 
 export default function Home() {
   const token = getCookie("accesstoken");
@@ -20,6 +23,8 @@ export default function Home() {
   const { roomState, roomDispatch } = useContext(RoomContex);
   const rooms = roomState?.room;
   const { getAllRooms } = UseRoomContext();
+  const [search_text, set_search_text] = useState("");
+  const [all_rooms, set_all_rooms] = useState(null);
 
   // State for managing input value
   const [inputValue, setInputValue] = useState("");
@@ -38,6 +43,18 @@ export default function Home() {
   useEffect(() => {
     getAllRooms();
   }, []);
+
+  useEffect(() => {
+    if (search_text) {
+      const searchedData = rooms?.filter((room) => {
+        const text = `${room.fullname} ${room.username} ${room.tittle}`.toLowerCase(); 
+        return text.includes(search_text.toLowerCase());
+      });
+      set_all_rooms(searchedData);
+    } else {
+      set_all_rooms(rooms);
+    }
+  }, [rooms, search_text]);
 
   if (!userData) {
     return (
@@ -73,26 +90,64 @@ export default function Home() {
 
   return (
     <>
-      <Container
-        style={{
-          backgroundImage: `url("/tbg.jpg")`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-        className="p-4 px-2 min-h-screen overflow-y-auto"
-      >
-        <div>
-          <span className="p-2 w-6/12 text-white lg:text-2xl font-bold text-lg">
-            Welcome {userData?.fullname}
-          </span>
+      <Container className=" p-0 min-h-screen rounded-t-[20px] bg-gradient-to-t from-[#46007C] to-[#8000E2] overflow-y-auto">
+        <div className="flex items-center">
+          <input
+            className="text-[14px] leading-[17.07px] w-full p-[18px] px-[18px] placeholder-white text-white font-[400] bg-[#6700B6] rounded-[20px]"
+            value={search_text}
+            name="search"
+            onChange={(e) => set_search_text(e.target.value)}
+            placeholder="Search Theatre..."
+          />
+          <IoSearch className="ml-[-40px] inline-block text-2xl text-white" />
         </div>
 
-        <div>
-          <h1 className="p-2 text-slate-400 bg-slate-800 text-xl lg:text-sm">
-            Active theatre {!rooms ? "loading room...." : `(${rooms?.length})`}
-          </h1>
-          <div className="p-4 px-0">
-            {rooms?.length === 0 && (
+        <div classname="p-2">
+          {!search_text && (
+            <>
+              <span className="p-2 w-6/12 text-white lg:text-2xl font-bold text-lg">
+                Welcome {userData?.fullname}
+              </span>
+
+              {/* for future use  */}
+              {/* <div>
+                <h1 className="text-[20px] leading-[24.38px] text-white font-[600]">
+                  Category
+                </h1>
+                <div>
+                  <CetagorySlider count={6} items={[]} />
+                </div>
+              </div> */}
+              <div>
+                <h1 className="text-[20px] p-2 pb-0 leading-[24.38px] text-white font-[600]">
+                  Top Theatres
+                </h1>
+                <div className="p-2">
+                  {all_rooms ? (
+                    all_rooms?.length ? (
+                      <>
+                      <div className="hidden lg:block">
+                      <TheatreSlider count={6} items={all_rooms} />
+                      </div>
+                      <div className="lg:hidden block">
+                      <TheatreSlider count={4} items={all_rooms} />
+                      </div>
+                      </>
+                    ) : (
+                      <h1 className="text-white py-4 px-2">No top theatre</h1>
+                    )
+                  ) : (
+                    <div className="flex items-center">
+                      <div classname="p-5 loading mx-2 w-3/12"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="p-3 px-2">
+            {all_rooms?.length === 0 && (
               <div className="text-center">
                 <TbMoodSad className="text-[100px] text-blue-500 m-3 inline-block" />
                 <h1 className="text-2xl text-blue-500 text-center">
@@ -100,12 +155,12 @@ export default function Home() {
                 </h1>
               </div>
             )}
-            {rooms?.map((room) => (
+            {all_rooms?.map((room) => (
               <div key={room._id} className="overflow-hidden">
                 <TheatreCart room={room} />
               </div>
             ))}
-            {!rooms && (
+            {!all_rooms && (
               <div>
                 <RoomLoaderCart />
                 <RoomLoaderCart />
@@ -117,8 +172,6 @@ export default function Home() {
             )}
           </div>
         </div>
-
-
       </Container>
     </>
   );
