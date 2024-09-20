@@ -107,7 +107,7 @@ export default function page() {
     <audio id="remoteAudio" autoPlay></audio>
     {localStream && <audio autoPlay muted srcObject={localStream}></audio>}
     {userData?._id === joinedroom?._id ? <MyRoom /> : <OtherRoom />}
-    </div.
+    </div>
     </>
   );
 }
