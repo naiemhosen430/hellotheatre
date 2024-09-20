@@ -25,7 +25,7 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <AuthContexProvider>
           <RoomContexProvider>
-            <div className="bg-[#1E201E] ">{children}</div>
+            <div className="bg-[#1E201E] min-h-screen">{children}</div>
           </RoomContexProvider>
         </AuthContexProvider>
       </body>

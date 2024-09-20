@@ -39,12 +39,12 @@ export default function MessageBox() {
   };
 
   return (
-    <div className="relative sticky bottom-0 z-[100] rounded-t-2xl overflow-hidden shadow-lg bg-gray-900 w-full h-[15px] flex flex-col">
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-800">
-        {messageData.map((data, i) => (
+    <div className=" sticky bottom-0 z-[100] rounded-t-2xl overflow-hidden shadow-lg bg-gray-900 w-full h-[350px] flex flex-col">
+      <div className="flex-1 overflow-y-auto p-2 bg-gray-800">
+        {messageData.reverse().map((data, i) => (
           <div
             key={i}
-            className="flex items-start bg-blue-800 p-3 rounded-lg mb-2 shadow-md"
+            className="flex items-start bg-blue-800/70 p-1 px-2 rounded-lg mb-2 shadow-md"
           >
             <div className="mr-2">
               <Image
@@ -55,11 +55,11 @@ export default function MessageBox() {
                 alt="Profile"
               />
             </div>
-            <div className="flex-1">
-              <p className="text-gray-400 text-xs font-semibold">
+            <div className="h-[2px]">
+              <p className="text-gray-400 leading-[10px] text-xs p-1 py-0 font-semibold">
                 {data?.from}
               </p>
-              <p className="text-white text-sm p-1 py-0 rounded-md">
+              <p className="text-white leading-[10px] text-sm p-1 py-0 rounded-md">
                 {data?.message}
               </p>
             </div>
@@ -68,32 +68,34 @@ export default function MessageBox() {
       </div>
       <div classname="absolute bottom-0">
         {focused && (
-          <div className=" items-end bg-gray-800 px-2 py-1 flex  border-t border-gray-700">
+          <div className=" items-center bg-gray-800 px-2 py-1 flex ">
             <input
-              className="w-full rounded-l-2xl bg-gray-700 text-white placeholder-gray-400 p-2"
+              className="w-full rounded-l-2xl focus:outline-none bg-gray-700 text-white placeholder-gray-400 p-2"
               type="text"
               value={messageText}
               placeholder="Type your message..."
               onChange={(e) => setMessageText(e.target.value)}
               autoFocus
             />
-            <div className="w-12 bg-black rounded-r-2xl flex items-center justify-center">
+            <div className="w-12 bg-black py-2 rounded-r-2xl flex items-center justify-center">
               <IoSend
                 onClick={sendMessage}
-                className="cursor-pointer text-xl text-white"
+                className="cursor-pointer text-2xl text-white"
               />
             </div>
           </div>
         )}
 
-        <div className=" w-full flex justify-center">
-          <div className="pr-1">
+        <div className=" w-full flex pz-2 p-1">
+          <div className="pr-1 w-6/12 bg-black">
             <div
-              onClick={() => setFocused(true)}
-              className="flex items-center cursor-pointer px-4 py-2 bg-blue-700 text-white rounded-full shadow-md"
+              onClick={() => setFocused(!focused)}
+              className="flex items-center cursor-pointer px-2 py-2 border-blue-700 text-white rounded-2xl shadow-md"
             >
-              <BiMessageRoundedDots className="text-lg" />
-              <p className="pl-2 text-sm">Send message</p>
+              <BiMessageRoundedDots className="lg:text-[10px]  block" />
+              <p className="m-0 leading-[10px] block  lg:text-[10px]">
+                Send message
+              </p>
             </div>
           </div>
         </div>

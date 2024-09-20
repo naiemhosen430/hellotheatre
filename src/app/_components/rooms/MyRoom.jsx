@@ -11,9 +11,6 @@ export default function MyRoom() {
         <div>
           <VideoPlayer localVideoRef={localAudioRef} />
         </div>
-        <div>
-          <Stage />
-        </div>
       </Container>
     </>
   );
