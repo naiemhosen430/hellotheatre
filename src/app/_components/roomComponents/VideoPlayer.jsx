@@ -8,6 +8,7 @@ import { AuthContex } from "@/Contexts/AuthContex";
 import { useRouter } from "next/navigation";
 import { RoomContex } from "@/Contexts/RoomContext";
 import StagePerson from "./StagePerson";
+import { FaArrowLeftLong } from "react-icons/fa6";
 import MessageBox from "./MessageBox";
 
 export default function VideoPlayer({ localVideoRef }) {
@@ -18,7 +19,7 @@ export default function VideoPlayer({ localVideoRef }) {
   const [remoteStreams, setRemoteStreams] = useState({});
   const inputRef = useRef(null);
   const fileInputRef = useRef(null); // Ref for the hidden file input
-  const { state } = useContext(AuthContex);
+  const { state, dispatch } = useContext(AuthContex);
   const userData = state?.user;
   const router = useRouter();
   const { roomState, roomDispatch } = useContext(RoomContex);
@@ -79,7 +80,8 @@ export default function VideoPlayer({ localVideoRef }) {
   // Set up WebRTC peer connections
   useEffect(() => {
     // Handle room closure
-    socket.on("room-closed", () => {
+    socket.on("room-closed", ({ roomData }) => {
+      dispatch({ type: "ADD_AUTH_DATA", payload: roomData || null });
       roomDispatch({
         type: "ADD_JOINEDROOM_DATA",
         payload: null,
@@ -135,19 +137,11 @@ export default function VideoPlayer({ localVideoRef }) {
 
       <div className="lg:flex">
         <div className="w-12/12 lg:w-8/12">
-          <div className="flex items-center justify-between p-2 text-slate-400 font-bold bg-slate-800">
-            <div className="flex items-center">
-              <div>
-                <h1 className="text-lg leading-[10px] lg:text-xl">
-                  Hello Theatre
-                </h1>
-    
-              </div>
-              <div className="px-4">
-                <h1 className="leading-[10px] text-sm lg:text-xl text-white font-bold">
-                  {joinedroom?.fullname}
-                </h1>
-              </div>
+          <div className="flex bg-[#46007C] items-center justify-between p-3 text-slate-400 font-bold bg-transfarent">
+            <div className="py-2">
+              <h1 className="leading-[10px] text-sm lg:text-xl text-white font-bold">
+                {joinedroom?.fullname}
+              </h1>
             </div>
             <div>
               <IoMdSettings
@@ -156,7 +150,7 @@ export default function VideoPlayer({ localVideoRef }) {
               />
             </div>
           </div>
-          <div className="border-2 border-x-sky-950">
+          <div className=" overflow-hidden rounded-2xl">
             {/* Conditionally render iframe or video element based on source */}
             {videoUrl ? (
               <video
@@ -227,9 +221,9 @@ export default function VideoPlayer({ localVideoRef }) {
               );
             })}
           </div>
-          <h1 className="p-2 text-slate-400 bg-slate-800 text-xl lg:text-sm">
+          {/* <h1 className="p-2 text-slate-400 bg-slate-800 text-xl lg:text-sm">
             People ({joinedroom?.users?.length})
-          </h1>
+          </h1> */}
           <MessageBox />
         </div>
       </div>

@@ -83,19 +83,11 @@ export default function UserPage() {
 
       <div className="lg:flex">
         <div className="w-12/12 lg:w-8/12">
-          <div className="flex items-center justify-between p-2 text-slate-400 font-bold bg-slate-800">
-            <div className="flex items-center">
-              <div>
-                <h1 className="text-lg leading-[10px] lg:text-xl">
-                  Hello Theatre
-                </h1>
-            
-              </div>
-              <div className="px-4">
-                <h1 className="leading-[10px] text-sm lg:text-xl text-white font-bold">
-                  {joinedroom?.fullname}
-                </h1>
-              </div>
+          <div className="flex bg-[#46007C] items-center justify-between p-3 text-slate-400 font-bold bg-transfarent">
+            <div className="py-2">
+              <h1 className="leading-[10px] text-sm lg:text-xl text-white font-bold">
+                {joinedroom?.fullname}
+              </h1>
             </div>
             <div>
               <IoMdSettings
@@ -104,9 +96,15 @@ export default function UserPage() {
               />
             </div>
           </div>
-          <div className="border-2 border-x-sky-950">
+          <div className=" overflow-hidden max-h-[400px] bg-black w-full rounded-2xl">
             {/* Display the host's video stream */}
-            <video ref={remoteVideoRef} autoPlay style={{ width: "300px" }} />
+            {remoteVideoRef ? (
+              <video ref={remoteVideoRef} autoPlay style={{ width: "100%" }} />
+            ) : (
+              <p className="text-white text-center py-5 px-2">
+                No video availabe!
+              </p>
+            )}
           </div>
         </div>
 
@@ -120,9 +118,9 @@ export default function UserPage() {
               );
             })}
           </div>
-          <h1 className="p-2 text-slate-400 bg-slate-800 text-xl lg:text-sm">
+          {/* <h1 className="p-2 text-slate-400 bg-slate-800 text-xl lg:text-sm">
             People ({joinedroom?.users?.length})
-          </h1>
+          </h1> */}
 
           <MessageBox />
         </div>

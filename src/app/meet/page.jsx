@@ -102,12 +102,11 @@ export default function page() {
 
   return (
     <>
-    <div className="fixed top-0 z-[1000] left-0 w-full min-h-screen">
-
-    <audio id="remoteAudio" autoPlay></audio>
-    {localStream && <audio autoPlay muted srcObject={localStream}></audio>}
-    {userData?._id === joinedroom?._id ? <MyRoom /> : <OtherRoom />}
-    </div>
+      <div className="fixed top-0 z-[1000] bg-[#46007C] left-0 w-full min-h-screen">
+        <audio id="remoteAudio" autoPlay></audio>
+        {localStream && <audio autoPlay muted srcObject={localStream}></audio>}
+        {userData?._id === joinedroom?._id ? <MyRoom /> : <OtherRoom />}
+      </div>
     </>
   );
 }

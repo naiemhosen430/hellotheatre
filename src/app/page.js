@@ -9,12 +9,13 @@ import { RoomContex } from "@/Contexts/RoomContext";
 import { Container } from "react-bootstrap";
 import RoomLoaderCart from "./_components/loaders/RoomLoaderCart";
 import { TbMoodSad } from "react-icons/tb";
-import UseRoomContext from "@/Hooks/UseRoomContext";
 import { IoSearch } from "react-icons/io5";
 import CetagorySlider from "./_components/sliders/CetagorySlider.jsx";
 import TheatreSlider from "./_components/sliders/TheatreSlider";
+import UseRoomContext from "@/Hooks/UseRoomContext";
 
 export default function Home() {
+
   const token = getCookie("accesstoken");
   const { state, dispatch } = useContext(AuthContex);
   const userData = state?.user;
@@ -22,7 +23,7 @@ export default function Home() {
   const [roomName, setRoomName] = useState("");
   const { roomState, roomDispatch } = useContext(RoomContex);
   const rooms = roomState?.room;
-  const { getAllRooms } = UseRoomContext();
+  const { getAllRooms,createRoomHandler } = UseRoomContext();
   const [search_text, set_search_text] = useState("");
   const [all_rooms, set_all_rooms] = useState(null);
 
@@ -55,6 +56,12 @@ export default function Home() {
       set_all_rooms(rooms);
     }
   }, [rooms, search_text]);
+
+  useEffect(()=>{
+    if (userData?.roomid ) {
+      createRoomHandler(userData?.username);
+    }
+  },[userData])
 
   if (!userData) {
     return (

@@ -7,7 +7,7 @@ export default function MyRoom() {
   const localAudioRef = null;
   return (
     <>
-      <Container className="bg-black h-screen px-0">
+      <Container className=" h-screen px-0">
         <div>
           <VideoPlayer localVideoRef={localAudioRef} />
         </div>

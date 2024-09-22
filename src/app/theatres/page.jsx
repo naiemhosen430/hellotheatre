@@ -3,13 +3,14 @@ import { useContext, useState, useEffect } from "react";
 import { RoomContex } from "@/Contexts/RoomContext";
 import TheatreCart from "../_components/roomComponents/TheatreCart";
 import RoomLoaderCart from "../_components/loaders/RoomLoaderCart";
+import { Container } from "react-bootstrap";
 
 export default function page() {
   const { roomState, roomDispatch } = useContext(RoomContex);
   const rooms = roomState?.room;
   return (
     <>
-      <div>
+      <Container>
         <h1 className="p-2 text-slate-400 bg-slate-800 text-xl lg:text-sm">
           Active theatre {!rooms ? "loading room...." : `(${rooms?.length})`}
         </h1>
@@ -38,7 +39,7 @@ export default function page() {
             </div>
           )}
         </div>
-      </div>
+      </Container>
     </>
   );
 }

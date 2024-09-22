@@ -18,5 +18,15 @@ export function middleware(request) {
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/", "/login", "/meet", "/profile:path"],
+  matcher: [
+    "/",
+    "/login",
+    "/meet",
+    "/profile:path",
+    "/feed",
+    "/meet",
+    "/theatre",
+    "/message",
+    "/profile",
+  ],
 };
