@@ -57,7 +57,9 @@ export default function BottomBar({ roomName }) {
     });
 
     socket.on("joined-room", (roomData) => {
-      if (roomData?.roomData?._id !== userData?._id) {
+      console.log({ state });
+      console.log(roomData?.roomData?._id, userData?._id, roomData);
+      if (roomData?.roomData?._id != userData?._id) {
         roomDispatch({
           type: "ADD_JOINEDROOM_DATA",
           payload: roomData?.roomData || null,
@@ -149,7 +151,11 @@ export default function BottomBar({ roomName }) {
                 <TiMessages className="inline-block text-[20px] text-white" />
                 <p className="text-white text-[10px] text-center">Messages</p>
               </Link>
-              <Link    onClick={createRoom} className="inline-block text-center p-1" href={""}>
+              <Link
+                onClick={createRoom}
+                className="inline-block text-center p-1"
+                href={""}
+              >
                 <FaPlus className="inline-block text-[20px] text-white" />
                 <p className="text-white text-[10px] text-center">Create</p>
               </Link>
